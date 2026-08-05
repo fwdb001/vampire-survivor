@@ -2,7 +2,7 @@
 <html lang="zh">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>血夜幸存者</title>
@@ -70,6 +70,7 @@ let state='title';
 let titleT=0;
 let T=0,PAUSED=false;
 let camx=0,camy=0;
+let ZOOM=1;
 let shake=0,red=0,flash=0;
 
 const WORLD=3000;
@@ -102,7 +103,10 @@ const PTR={list:{},joy:null};
 let ROTATED=false;
 function applyOrientation(){
   const hasTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  const vw=window.innerWidth,vh=window.innerHeight;
+  ZOOM=hasTouch?1.35:1;
+  const vv=window.visualViewport;
+  const vw=vv&&vv.width?vv.width:window.innerWidth;
+  const vh=vv&&vv.height?vv.height:window.innerHeight;
   const portrait=hasTouch&&vh>vw;
   const wrap=document.getElementById('wrap');
   if(portrait){
@@ -116,6 +120,7 @@ function applyOrientation(){
 }
 addEventListener('resize',applyOrientation);
 addEventListener('orientationchange',()=>setTimeout(applyOrientation,150));
+if(window.visualViewport)window.visualViewport.addEventListener('resize',applyOrientation);
 applyOrientation();
 function ptrPos(e){
   const r=canvas.getBoundingClientRect();
@@ -133,6 +138,9 @@ function joyFromPts(){
 }
 canvas.addEventListener('pointerdown',e=>{
   e.preventDefault();
+  if(!document.fullscreenElement&&navigator.maxTouchPoints>0&&document.documentElement.requestFullscreen){
+    try{document.documentElement.requestFullscreen().catch(()=>{});}catch(_){}
+  }
   const p=ptrPos(e);
   canvas.setPointerCapture&&canvas.setPointerCapture(e.pointerId);
   PTR.list[e.pointerId]={x:p.x,y:p.y,ax:p.x,ay:p.y,joy:false};
@@ -807,9 +815,9 @@ function update(dt){
       eliteWarn=null;shake=Math.max(shake,6);SOUND.die();
     }}
 
-    const want=Math.min(5+T*0.8,90);
+    const want=Math.min(4+T*0.6,60);
     if(enemies.length<want){
-      const n=Math.min(6,want-enemies.length);
+      const n=Math.min(5,want-enemies.length);
       for(let i=0;i<n;i++){
         const rp=spawnRingPos();
         let kind=pickKind();
@@ -1103,14 +1111,15 @@ function levelUpInstant(){
 }
 
 function camUpdate(dt){
-  camx+= (player.x-W/2-camx)*Math.min(1,dt*8);
-  camy+= (player.y-H/2-camy)*Math.min(1,dt*8);
-  camx=clamp(camx,0,WORLD-W);
-  camy=clamp(camy,0,WORLD-H);
+  const vw=W/ZOOM,vh=H/ZOOM;
+  camx+= (player.x-vw/2-camx)*Math.min(1,dt*8);
+  camy+= (player.y-vh/2-camy)*Math.min(1,dt*8);
+  camx=clamp(camx,0,WORLD-vw);
+  camy=clamp(camy,0,WORLD-vh);
 }
 
 function drawWorld(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   const shx=(Math.random()*2-1)*shake,shy=(Math.random()*2-1)*shake;
   ctx.translate(-Math.round(camx+shx),-Math.round(camy+shy));
   ctx.fillStyle=PATT;
@@ -1122,7 +1131,7 @@ function drawWorld(){
 }
 
 function drawFg(){
-  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.setTransform(DPR*ZOOM,0,0,DPR*ZOOM,0,0);
   ctx.translate(-Math.round(camx),-Math.round(camy));
   for(const e of enemies)drawEnemy(e);
   for(const b of bolts)drawBolt(b);
