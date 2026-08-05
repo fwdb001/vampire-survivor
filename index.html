@@ -166,7 +166,7 @@ addEventListener('pointerup',e=>{
   const id=e.pointerId;
   const t=PTR.list[id];
   if(t!==undefined&&state==='title'&&Math.hypot(t.x-t.ax,t.y-t.ay)<12){
-    if(t.y>H-80){boardFrom='title';boardRows=genBoardRows();state='board';}
+    if(t.y>H-80){openBoard('title');}
     else if(t.y>H-124&&t.y<=H-80&&Math.abs(t.x-W/2)<110){shareGame();}
     else startRun();
   }else if(t!==undefined&&state==='board'&&Math.hypot(t.x-t.ax,t.y-t.ay)<12){
@@ -222,53 +222,79 @@ let kills=0,eliteWarn=null,chest=null,cardOffer=[],cardShownAt=0;
 let nextElite=20;
 let currentMove=0;
 let xpGot=0;
+const LB_URL='https://jsonblob.com/api/jsonBlob/019fd2e1-c905-7bb5-b5f9-26f407fb6b39';
+let playerUID;
+try{
+  playerUID=localStorage.getItem('vs_uid');
+  if(!playerUID){playerUID='u'+Date.now().toString(36)+Math.random().toString(36).slice(2,8);localStorage.setItem('vs_uid',playerUID);}
+}catch(_){playerUID='u'+Math.random().toString(36).slice(2,10);}
 let boardFrom='title';
-let boardRows=null;
-function loadBoard(){
+let boardRows=[];
+let boardLoading=false;
+let _boardCache=[];
+let _boardLastFetch=0;
+async function loadBoard(){
+  const now=Date.now();
+  if(_boardCache.length>0&&now-_boardLastFetch<3000)return _boardCache;
   try{
-    const raw=localStorage.getItem('vs_leaderboard');
-    if(!raw)return [];
-    const arr=JSON.parse(raw);
-    if(!Array.isArray(arr))return [];
-    return arr.filter(r=>r&&typeof r.s==='number'&&r.s>0).sort((a,b)=>b.s-a.s).slice(0,200);
-  }catch(_){return [];}
+    const res=await fetch(LB_URL);
+    if(!res.ok)return _boardCache;
+    const data=await res.json();
+    if(!data)return _boardCache;
+    const arr=Object.values(data);
+    _boardCache=arr.filter(r=>r&&typeof r.s==='number'&&r.s>0).sort((a,b)=>b.s-a.s).slice(0,200);
+    _boardLastFetch=now;
+    return _boardCache;
+  }catch(_){return _boardCache;}
 }
-function saveBoard(board){
-  try{localStorage.setItem('vs_leaderboard',JSON.stringify(board));}catch(_){}
-}
+function saveBoard(board){}
 function getPlayerName(){
   try{return localStorage.getItem('vs_name')||'玩家';}catch(_){return '玩家';}
 }
 function myBoardRank(s){
-  const b=loadBoard();
-  for(let i=0;i<b.length;i++)if(b[i].s===s&&b[i].me)return i+1;
+  const b=_boardCache;
+  for(let i=0;i<b.length;i++)if(b[i].s===s&&b[i].uid===playerUID)return i+1;
   return 0;
 }
-function gameOverSaveScore(){
+async function gameOverSaveScore(){
   try{
     const now=Math.floor(T);
     if(now<=0)return;
     const myName=getPlayerName();
-    const b=loadBoard();
-    b.push({n:myName,s:now,lv:player.level,k:kills,me:true});
-    b.sort((a,b)=>b.s-a.s);
-    const trimmed=b.slice(0,200);
-    saveBoard(trimmed);
-    const rank=trimmed.findIndex(r=>r.s===now&&r.me)+1;
+    const res=await fetch(LB_URL);
+    const data=await res.json();
+    const current=data||{};
+    const entryKey=playerUID+'_'+now+'_'+Math.random().toString(36).slice(2,6);
+    current[entryKey]={n:myName,s:now,lv:player.level,k:kills,uid:playerUID,ts:Date.now()};
+    const arr=Object.values(current).sort((a,b)=>b.s-a.s);
+    const trimmed={};
+    arr.slice(0,200).forEach((r,i)=>{trimmed['e'+i]=r;});
+    await fetch(LB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trimmed)});
+    _boardLastFetch=0;
+    _boardCache=arr.slice(0,200);
+    const rank=_boardCache.findIndex(r=>r.uid===playerUID&&r.s===now)+1;
     if(rank>0&&rank<=10){
       let nm=null;
       try{nm=prompt('🏆 你进入前十名（第'+rank+'名）！输入你的名字：',myName);}catch(_){}
       if(nm&&String(nm).trim()){
         const clean=String(nm).trim().slice(0,16);
         try{localStorage.setItem('vs_name',clean);}catch(_){}
-        const t=loadBoard();
-        const idx=t.findIndex(r=>r.s===now&&r.me);
-        if(idx>=0){t[idx].n=clean;saveBoard(t);}
+        const res2=await fetch(LB_URL);
+        const data2=await res2.json();
+        if(data2){let chg=false;for(const[key,val]of Object.entries(data2)){if(val.uid===playerUID){data2[key].n=clean;chg=true;}}if(chg){await fetch(LB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data2)});}}
+        _boardLastFetch=0;
       }
     }
   }catch(_){}
 }
-function genBoardRows(){return loadBoard();}
+async function genBoardRows(){return await loadBoard();}
+async function openBoard(from){
+  boardFrom=from;
+  boardLoading=true;
+  state='board';
+  boardRows=await loadBoard();
+  boardLoading=false;
+}
 let enemyPool=[],boltPool=[];
 const DASH_CD=3;
 const BIRD_SIZE_MAX=2.6;
@@ -708,7 +734,7 @@ function gameOverTap(p){
   if(p.x>=bx&&p.x<=bx+bw&&p.y>=by&&p.y<=by+bh){startRun();}
   else if(p.x>=cx&&p.x<=cx+cw&&p.y>=cy&&p.y<=cy+ch)location.reload();
   else if(p.x>=sx&&p.x<=sx+sw&&p.y>=sy&&p.y<=sy+sh)shareScore();
-  else if(p.x>=lbx&&p.x<=lbx+lbw&&p.y>=lby&&p.y<=lby+lbh){boardFrom='gameover';boardRows=genBoardRows();state='board';}
+  else if(p.x>=lbx&&p.x<=lbx+lbw&&p.y>=lby&&p.y<=lby+lbh){openBoard('gameover');}
 }
 
 function copyText(txt){
@@ -2838,29 +2864,40 @@ function drawGameOver(){
 }
 
 function drawBoard(){
-  const rows=(boardRows||genBoardRows()).slice();
-  rows.sort((a,b)=>b.s-a.s);
-  const top=rows.slice(0,10);
-  const myS=Math.floor(T);
-  const myRank=rows.findIndex(r=>r.me)>=0?rows.findIndex(r=>r.s===myS&&r.me)+1:0;
-  const me={n:getPlayerName(),s:myS,me:true};
   ctx.globalAlpha=0.8;
   ctx.fillStyle='#08040f';ctx.fillRect(0,0,W,H);
   ctx.globalAlpha=1;
   ctx.textAlign='center';
   ctx.font='bold 40px Consolas,monospace';
   ctx.fillStyle='#ffd24a';
-  ctx.fillText('排行榜',W/2,84);
+  ctx.fillText('全服排行榜',W/2,84);
+  if(boardLoading){
+    ctx.font='18px Consolas,monospace';
+    ctx.fillStyle='#bfe8cf';
+    ctx.fillText('正在加载全服数据...',W/2,H/2);
+    ctx.fillStyle='#7a6a98';
+    ctx.font='14px Consolas,monospace';
+    ctx.fillText('点击任意处返回',W/2,H-40);
+    return;
+  }
+  const rows=(boardRows||[]).slice();
+  rows.sort((a,b)=>b.s-a.s);
+  const top=rows.slice(0,10);
+  const myS=Math.floor(T);
+  const myRank=rows.findIndex(r=>r.uid===playerUID&&r.s===myS);
+  const myRankDisplay=myRank>=0?myRank+1:0;
+  const me={n:getPlayerName(),s:myS,uid:playerUID};
   ctx.font='13px Consolas,monospace';
   ctx.fillStyle='#8f7cc0';
-  ctx.fillText(top.length?'本机储存的最近 200 局成绩 · 只显示前十':'还没有成绩,先来一局吧',W/2,108);
+  ctx.fillText(top.length?'全服共享排行榜 · 前十名':'还没有成绩,先来一局吧',W/2,108);
   const boxX=W/2-220,boxW=440;
   for(let i=0;i<top.length;i++){
     const r=top[i];
     const ry=132+i*46;
-    ctx.fillStyle=r.me?'#2a1030':'#161026';
+    const isMe=r.uid===playerUID;
+    ctx.fillStyle=isMe?'#2a1030':'#161026';
     ctx.beginPath();ctx.roundRect(boxX,ry-6,boxW,40,8);ctx.fill();
-    if(r.me){ctx.strokeStyle='#ff9ad4';ctx.lineWidth=2;ctx.strokeRect(boxX+1,ry-5,boxW-2,38);}
+    if(isMe){ctx.strokeStyle='#ff9ad4';ctx.lineWidth=2;ctx.strokeRect(boxX+1,ry-5,boxW-2,38);}
     const mm=Math.floor(r.s/60),ss=Math.floor(r.s%60);
     const time=(mm<10?'0':'')+mm+':'+(ss<10?'0':'')+ss;
     ctx.font='bold 16px Consolas,monospace';
@@ -2868,7 +2905,7 @@ function drawBoard(){
     ctx.fillStyle=i===0?'#ffd24a':(i===1?'#cfd8e8':(i===2?'#e8a56a':'#8f7cc0'));
     ctx.fillText((i+1)+'.',boxX+18,ry+22);
     ctx.fillStyle='#e8dcf7';
-    ctx.fillText((r.n||'玩家')+(r.me?' (你)':''),boxX+66,ry+22);
+    ctx.fillText((r.n||'玩家')+(isMe?' (你)':''),boxX+66,ry+22);
     ctx.textAlign='right';
     ctx.fillStyle='#9fbfff';
     ctx.fillText(time,boxX+boxW-16,ry+22);
@@ -2883,7 +2920,7 @@ function drawBoard(){
   ctx.font='bold 16px Consolas,monospace';
   ctx.textAlign='left';
   ctx.fillStyle='#ff6e8a';
-  ctx.fillText(myRank>0?('第'+myRank+'名'):'未上榜',boxX+18,my.y+22);
+  ctx.fillText(myRankDisplay>0?('第'+myRankDisplay+'名'):'未上榜',boxX+18,my.y+22);
   ctx.fillText(me.n+' (本局)',boxX+150,my.y+22);
   ctx.textAlign='right';
   ctx.fillStyle='#ffd24a';
