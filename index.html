@@ -9,8 +9,8 @@
 <style>
   html,body{margin:0;padding:0;height:100%;background:#07040c;overflow:hidden;font-family:Consolas,"Courier New",monospace;-webkit-tap-highlight-color:transparent;}
   body{display:flex;align-items:center;justify-content:center;}
-  #wrap{position:relative;box-shadow:0 0 60px rgba(150,30,120,.25);border:1px solid #331144;}
-  canvas{display:block;width:min(100vw,177.78vh);height:min(100vh,56.25vw);image-rendering:pixelated;background:#0d0618;touch-action:none;user-select:none;-webkit-user-select:none;}
+  #wrap{position:relative;box-shadow:0 0 60px rgba(150,30,120,.25);border:1px solid #331144;width:min(100vw,177.78vh);height:min(100vh,56.25vw);}
+  canvas{display:block;width:100%;height:100%;image-rendering:pixelated;background:#0d0618;touch-action:none;user-select:none;-webkit-user-select:none;}
 </style>
 </head>
 <body>
@@ -99,8 +99,27 @@ addEventListener('keyup',e=>{const n=keyMap[e.key.toLowerCase()];if(n)keys[n]=fa
 document.addEventListener('visibilitychange',()=>{if(state==='play')state='pause';});
 
 const PTR={list:{},joy:null};
+let ROTATED=false;
+function applyOrientation(){
+  const hasTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const portrait=hasTouch&&vh>vw;
+  const wrap=document.getElementById('wrap');
+  if(portrait){
+    const wwrap=Math.min(vh,177.78*vw/100),hwrap=Math.min(vw,56.25*vh/100);
+    ROTATED=true;
+    wrap.style.cssText='position:absolute;left:50%;top:50%;margin:0;width:'+wwrap+'px;height:'+hwrap+'px;transform:translate(-50%,-50%) rotate(-90deg);';
+  }else{
+    ROTATED=false;
+    wrap.style.cssText='';
+  }
+}
+addEventListener('resize',applyOrientation);
+addEventListener('orientationchange',()=>setTimeout(applyOrientation,150));
+applyOrientation();
 function ptrPos(e){
   const r=canvas.getBoundingClientRect();
+  if(ROTATED)return {x:(r.bottom-e.clientY)*W/r.height,y:(e.clientX-r.left)*H/r.width};
   return {x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};
 }
 function joyFromPts(){
