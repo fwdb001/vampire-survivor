@@ -151,8 +151,7 @@ canvas.addEventListener('pointerdown',e=>{
       toDash();
     }
   }
-  if(state==='title'){if(p.y>H-80){boardFrom='title';boardRows=genBoardRows();state='board';}else startRun();return;}
-  if(state==='board'){state=boardFrom;return;}
+  if(state==='title'||state==='board')return;
   if(state==='card'&&cardOffer.length){tapCard(p);return;}
   if(state==='gameover'){gameOverTap(p);return;}
   if(state==='play'||state==='pause'){
@@ -163,8 +162,23 @@ canvas.addEventListener('pointerdown',e=>{
   }
 });
 addEventListener('pointermove',e=>{const p=ptrPos(e);if(PTR.list[e.pointerId]){PTR.list[e.pointerId].x=p.x;PTR.list[e.pointerId].y=p.y;}});
-addEventListener('pointerup',e=>{const id=e.pointerId;if(PTR.joy===id)PTR.joy=null;delete PTR.list[id];});
+addEventListener('pointerup',e=>{
+  const id=e.pointerId;
+  const t=PTR.list[id];
+  if(t!==undefined&&state==='title'&&Math.hypot(t.x-t.ax,t.y-t.ay)<12){
+    if(t.y>H-80){boardFrom='title';boardRows=genBoardRows();state='board';}
+    else startRun();
+  }else if(t!==undefined&&state==='board'&&Math.hypot(t.x-t.ax,t.y-t.ay)<12){
+    state=boardFrom;
+  }
+  if(PTR.joy===id)PTR.joy=null;
+  delete PTR.list[id];
+});
 addEventListener('pointercancel',e=>{const id=e.pointerId;if(PTR.joy===id)PTR.joy=null;delete PTR.list[id];});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('gesturestart',e=>e.preventDefault());
+document.addEventListener('gesturechange',e=>e.preventDefault());
+document.addEventListener('gestureend',e=>e.preventDefault());
 
 const SOUND={
   ctx:null,muted:false,
@@ -203,7 +217,7 @@ const SOUND={
 
 let player=null;
 let enemies=[],gems=[],bolts=[],ebolts=[],fx=[],parts=[],texts=[],tomes=[],bottles=[],zones=[],birds=[];
-let kills=0,eliteWarn=null,chest=null,cardOffer=[];
+let kills=0,eliteWarn=null,chest=null,cardOffer=[],cardShownAt=0;
 let nextElite=20;
 let currentMove=0;
 let xpGot=0;
@@ -582,10 +596,12 @@ function offerCards(){
     picks.add(pool[rndi(0,pool.length-1)]);
   }
   cardOffer=[...picks];
+  cardShownAt=performance.now();
   state='card';
 }
 
 function tapCard(p){
+  if(cardShownAt&&performance.now()-cardShownAt<250)return;
   const n=cardOffer.length;
   const bw=310,wor=Math.min(64,(W-bw*n)/(n+1));
   for(let i=0;i<n;i++){
@@ -823,7 +839,8 @@ function update(dt){
         let kind=pickKind();
         const def=ENEMYDEF[kind],hpS=1+T*0.025+T*T*0.0009;
         if(Math.random()<0.03+Math.min(T*0.0006,0.12)){kind='golem';}
-        const hp=(kind==='golem'?def.hp:def.hp*0.7)*hpS;
+        const hpMul=T<120?0.72+T/120*0.28:1;
+        const hp=(kind==='golem'?def.hp:def.hp*0.7)*hpS*hpMul;
         allocEnemy(kind,rp.wx,rp.wy,{hp:Math.round(hp),maxHp:Math.round(hp),spd:def.spd*(1+Math.min(T*0.005,0.8)),dmg:def.dmg*(1+T*0.03),r:def.r,col:def.col,spdV:def.spdV,xp:Math.max(1,Math.round(def.xp*Math.min(1,0.6+T*0.006))),cd:rnd(0.4,1.4),scl:def.scl});
       }
     }
