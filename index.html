@@ -495,7 +495,7 @@ function allocEnemy(kind,x,y,o){
   e.vx=0;e.vy=0;e.kx=0;e.ky=0;e.hitFlash=0;e.slow=0;
   e.dmgMul=1;e.dmgMulT=0;e.freeze=0;e.poisonDps=0;e.poisonT=0;
   e.spec=null;e.specT=rnd(3,5);e.teleT=0;e.teleFx=false;e.ramT=0;e.ramVX=0;e.ramVY=0;
-  e.lungeT=0;e.lungeVX=0;e.lungeVY=0;
+  e.lungeT=0;e.lungeVX=0;e.lungeVY=0;e.lunged=false;
   e.dead=false;e.elite=!!o.elite;e.chest=!!o.chest;
   e.st=0;e.stT=0;e.cd=o.cd||0;e.atkDmg=false;
   enemies.push(e);
@@ -774,8 +774,8 @@ function update(dt){
         }
         if(e.stT<=0){e.st=0;e.cd=atk.cd;e.atkDmg=false;}
       }else{
-        if(d<150&&e.cd>0.3&&!e.elite&&Math.random()<dt*4){
-          e.lungeT=0.3;e.lungeVX=Math.cos(a)*740*(e.slow>0?0.55:1);e.lungeVY=Math.sin(a)*740*(e.slow>0?0.55:1);
+        if(d<150&&e.cd>0.3&&!e.elite&&!e.lunged&&Math.random()<dt*4){
+          e.lunged=true;e.lungeT=0.3;e.lungeVX=Math.cos(a)*740*(e.slow>0?0.55:1);e.lungeVY=Math.sin(a)*740*(e.slow>0?0.55:1);
         }else{
           if(d<atk.range&&e.cd<=0&&d>e.r+p.r*0.5){
             e.st=1;e.stT=atk.windup;
