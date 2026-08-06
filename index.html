@@ -1396,40 +1396,6 @@ function update(dt){
             e.vx*=0.9;e.vy*=0.9;
           }
         }
-                while(diff<-Math.PI)diff+=Math.PI*2;
-                if(Math.abs(diff)<0.5)hurtPlayer(e.dmg*1.8,a);
-              }
-            }else if(e.pattern==='meteor'){
-              e.meteorT=(e.meteorT||0)-dt;
-              if(e.meteorT<=0){
-                if(Math.hypot(e._mx-player.x,e._my-player.y)<60)hurtPlayer(e.dmg*1.5,a);
-                zones.push({x:e._mx,y:e._my,r:55,dmg:e.dmg*0.5,t:5,tickT:0,col:'#ff8020'});
-              }
-            }else if(e.pattern==='fire_rain'){
-              e.fireRainT=(e.fireRainT||0)-dt;
-              if(e.fireRainT>0&&Math.random()<dt*40){
-                const rx=player.x+rnd(-600,600),ry=player.y+rnd(-600,600);
-                fx.push({kind:'spark',x:rx,y:ry,t:0,dur:0.3,col:'#ff6020'});
-                if(Math.hypot(rx-player.x,ry-player.y)<30)hurtPlayer(e.dmg*0.5,a);
-              }
-            }else if(e.pattern==='final_breath'){
-              e.finalBreathT=(e.finalBreathT||0)-dt;
-              if(e.finalBreathT>0){
-                const inSafeL=Math.hypot(player.x-60,player.y-WORLD/2)<80;
-                const inSafeR=Math.hypot(player.x-(WORLD-60),player.y-WORLD/2)<80;
-                if(!inSafeL&&!inSafeR&&Math.random()<dt*8){
-                  hurtPlayer(e.dmg*3.0,a);
-                }
-              }
-            }
-            if(e.stT<=0){e.st=0;e.cd=rnd(0.3,0.8);}
-          }else{
-            if(e.cd<=0&&d<600){
-              e.st=1;e.stT=0.4;
-            }
-            e.vx*=0.9;e.vy*=0.9;
-          }
-        }
         e.x+=(e.vx+e.kx)*dt;e.y+=(e.vy+e.ky)*dt;
         e.x=clamp(e.x,20,WORLD-20);e.y=clamp(e.y,20,WORLD-20);
         alive.push(e);continue;
