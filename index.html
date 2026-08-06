@@ -322,7 +322,7 @@ function rarityMult(lv){return RARITY_MULT[rarityOf(lv)];}
 
 const WEPS={
   bolt:{name:'魔弹',icon:'✦',max:8,
-    cfg(l){return{dmg:(0+30*l)*1.5,cd:1.5*Math.pow(0.86,l-1),n:1+Math.floor((l-1)/2),spd:14+0.5*l,rng:460+20*l};},
+    cfg(l){return{dmg:(0+30*l)*1.5,cd:1.2*Math.pow(0.86,l-1),n:1+Math.floor((l-1)/2),spd:14+0.5*l,rng:460+20*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(c.rng);
@@ -349,7 +349,7 @@ const WEPS={
       SOUND.shot();
     }},
   whip:{name:'圣鞭',icon:'↟',max:6,
-    cfg(l){return{dmg:0+42*l,cd:1.5*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.08,0.015*l)};},
+    cfg(l){return{dmg:0+42*l,cd:1.2*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.08,0.015*l)};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(340);
@@ -358,7 +358,7 @@ const WEPS={
       SOUND.shot();
     }},
   tome:{name:'圣书',icon:'❁',max:5,
-    cfg(l){return{dmg:0+30*l,cd:1.5*Math.pow(0.92,l-1),n:1+Math.floor((l-1)/2),spd:23,rng:300,rad:80+9*l};},
+    cfg(l){return{dmg:0+30*l,cd:1.2*Math.pow(0.92,l-1),n:1+Math.floor((l-1)/2),spd:23,rng:300,rad:80+9*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(c.rng);
@@ -371,7 +371,7 @@ const WEPS={
       SOUND.shot();
     }},
   aura:{name:'大蒜',icon:'☠',max:6,
-    cfg(l){return{dmg:0+18*l,cd:1.5,rad:125+22*l};},
+    cfg(l){return{dmg:0+18*l,cd:1.2,rad:125+22*l};},
     tick(l,p,mult){
       const c=this.cfg(l);
       for(const e of enemies){
@@ -383,7 +383,7 @@ const WEPS={
       }
     }},
   spark:{name:'落雷',icon:'⚡',max:6,
-    cfg(l){return{dmg:0+84*l,cd:1.5*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),rng:430};},
+    cfg(l){return{dmg:0+84*l,cd:1.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),rng:430};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const cand=enemies.filter(e=>dist(player,e)<c.rng);
@@ -398,7 +398,7 @@ const WEPS={
       if(c.n)SOUND.shot();
     }},
   bottle:{name:'药瓶',icon:'⛼',max:6,
-    cfg(l){return{dmg:0+20*l,cd:1.5*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:88+8*l,zoneDur:5.5};},
+    cfg(l){return{dmg:0+20*l,cd:1.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:88+8*l,zoneDur:5.5};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -410,7 +410,7 @@ const WEPS={
       SOUND.shot();
     }},
   beer:{name:'精酿啤酒',icon:'🍺',max:6,
-    cfg(l){return{dmg:0+15*l,cd:1.5*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:84+8*l,zoneDur:5,poisonDps:3*l};},
+    cfg(l){return{dmg:0+15*l,cd:1.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:84+8*l,zoneDur:5,poisonDps:3*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -422,7 +422,7 @@ const WEPS={
       SOUND.shot();
     }},
   holy:{name:'圣水',icon:'✝',max:6,
-    cfg(l){return{dmg:2*l,pct:0.10,cd:1.5*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:92+8*l,zoneDur:6};},
+    cfg(l){return{dmg:2*l,pct:0.10,cd:1.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:92+8*l,zoneDur:6};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -434,7 +434,7 @@ const WEPS={
       SOUND.shot();
     }},
   axe:{name:'飞斧',icon:'†',max:6,
-    cfg(l){return{dmg:0+60*l,cd:1.5*Math.pow(0.93,l-1),n:1+Math.floor((l-1)/2),spd:11,rng:400};},
+    cfg(l){return{dmg:0+60*l,cd:1.2*Math.pow(0.93,l-1),n:1+Math.floor((l-1)/2),spd:11,rng:400};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -446,7 +446,7 @@ const WEPS={
       SOUND.shot();
     }},
   frost:{name:'寒冰',icon:'✻',max:6,
-    cfg(l){return{dmg:0+36*l,cd:1.5*Math.pow(0.94,l-1),rng:205+26*l,slowT:1.6};},
+    cfg(l){return{dmg:0+36*l,cd:1.2*Math.pow(0.94,l-1),rng:205+26*l,slowT:1.6};},
     fire(l,p,mult){
       const c=this.cfg(l);
       fx.push({kind:'ring',x:player.x,y:player.y,t:0,dur:0.45,r0:10,r1:c.rng,col:'#9fe0ff'});
@@ -462,7 +462,7 @@ const WEPS={
       SOUND.shot();
     }},
   bird:{name:'飞舞的鹁',icon:'鹁',max:6,
-    cfg(l){return{dmg:40+570*l,cd:1.5*Math.pow(0.85,l-1),n:1+(l>=4?1:0)+(l>=6?1:0),rng:320,spdStrike:420,rad:50+8*l};},
+    cfg(l){return{dmg:40+570*l,cd:1.2*Math.pow(0.85,l-1),n:1+(l>=4?1:0)+(l>=6?1:0),rng:320,spdStrike:420,rad:50+8*l};},
     fire(l,p,mult){}}
 };
 
@@ -1559,7 +1559,7 @@ function update(dt){
     }
 
     // Normal enemy spawning (suppressed during boss)
-    const want=Math.min(6+T*0.1,15);
+    const want=Math.min(6+T*0.2,30);
     if(!bossActive&&!bossWarn&&enemies.length<want){
       const n=Math.min(5,want-enemies.length);
       for(let i=0;i<n;i++){
