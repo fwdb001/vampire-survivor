@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="utf-8">
@@ -978,6 +978,8 @@ function update(dt){
       }
       if(e.boss){
         e.slow=0;e.kx=0;e.ky=0;if(e.freeze>0)e.freeze=0;
+        e.inv=Math.max(0,(e.inv||0)-dt);
+        e.teleCd=Math.max(0,(e.teleCd||0)-dt);
         const a=angTo(e,player);
         const d=dist(player,e);
         e.cd=(e.cd||0)-dt;
@@ -988,6 +990,22 @@ function update(dt){
           shake=Math.max(shake,6);
         }
         e.invContact=(e.invContact||0)-dt;
+        // Boss teleport: chase player aggressively
+        if(d>350&&e.teleCd<=0&&e.st===0&&e.bossType!=='dragon_ignix'){
+          e.teleCd=e.teleMaxCd;
+          const tgtX=player.x+Math.cos(a)*(d>200?d-200:0);
+          const tgtY=player.y+Math.sin(a)*(d>200?d-200:0);
+          const tx=clamp(tgtX,60,WORLD-60),ty=clamp(tgtY,60,WORLD-60);
+          fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:10,r1:80,col:'#7030c0'});
+          e.x=tx;e.y=ty;
+          fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:30,r1:90,col:'#9040e0'});
+          shake=Math.max(shake,14);
+          texts.push({x:e.x,y:e.y-40,txt:'暗影突袭!',col:'#ff5060',t:0,dur:1.5,vy:-40});
+          SOUND.die();
+          const nd=dist(player,e);
+          if(nd<120)hurtPlayer(e.dmg*2.0,angTo(e,player));
+          alive.push(e);continue;
+        }
         const bt=e.bossType||'knight_shadow';
         e.phase=(e.phase||0)-dt;
         if(bt==='knight_shadow'){
@@ -1518,23 +1536,24 @@ function update(dt){
     if(bossWarn){bossWarn.t-=dt;if(bossWarn.t<=0){
       const lv=player.level;
       const bossType=currentBossType;
-      const hpBase=8000+lv*lv*350+lv*lv*lv*25;
+      const hpBase=12000+lv*lv*550+lv*lv*lv*45;
       const bossColors={knight_shadow:'#2a0a30',blood_wolf:'#3a0a10',mech_abom:'#1a2a1a',dragon_ignix:'#3a1a0a'};
-      const bossSpeeds={knight_shadow:65,blood_wolf:85,mech_abom:40,dragon_ignix:0};
+      const bossSpeeds={knight_shadow:85,blood_wolf:110,mech_abom:55,dragon_ignix:0};
       const bossSizes={knight_shadow:56,blood_wolf:52,mech_abom:64,dragon_ignix:80};
       const bossScls={knight_shadow:1.8,blood_wolf:1.8,mech_abom:2.0,dragon_ignix:2.2};
       const e=allocEnemy('boss',bossWarn.x,bossWarn.y,{
         hp:Math.round(hpBase),maxHp:Math.round(hpBase),
-        spd:bossSpeeds[bossType],dmg:90,r:bossSizes[bossType],
+        spd:bossSpeeds[bossType],dmg:110,r:bossSizes[bossType],
         col:bossColors[bossType],spdV:3,xp:250,cd:0.4,
         elite:false,chest:false,boss:true,scl:bossScls[bossType],
         bossType:bossType
       });
+      e.inv=1.5;e.teleCd=0;e.teleMaxCd=6;
       if(bossType==='blood_wolf'){
         e.wolves=[];e.howlUsed=false;e.wolfCd=0;
       }else if(bossType==='mech_abom'){
-        e.leftArmHp=4000;e.leftArmMax=4000;e.rightArmHp=4000;e.rightArmMax=4000;
-        e.coreHp=7000;e.coreMax=7000;e.armsBroken=false;e.repairing=false;e.repairCd=0;
+        e.leftArmHp=6000;e.leftArmMax=6000;e.rightArmHp=6000;e.rightArmMax=6000;
+        e.coreHp=10000;e.coreMax=10000;e.armsBroken=false;e.repairing=false;e.repairCd=0;
       }else if(bossType==='dragon_ignix'){
         e.dragonPhase=1;e.dragonPos='top';e.dragonFlyCd=4;e.dragonWeakSpot=true;
         e.headX=e.x;e.headY=e.y-50;e.bodyX=e.x;e.bodyY=e.y+20;
@@ -1543,6 +1562,10 @@ function update(dt){
       }
       currentBossType=bossType;
       bossActive=true;bossWarn=null;
+      // Clear small monsters when boss spawns
+      for(const en of enemies){
+        if(!en.boss&&!en.dead){en.dead=true;kill(en);}
+      }
       shake=Math.max(shake,16);flash=0.2;
       SOUND.die();
     }}
@@ -1712,9 +1735,9 @@ function update(dt){
           if((dx<rr||-dx<rr)&&(dy<rr||-dy<rr)&&dx*dx+dy*dy<rr*rr){
             applyDmg(e,z.dmg,6,Math.cos(angTo(e,z)),Math.sin(angTo(e,z)));
             fx.push({kind:'spark',x:e.x,y:e.y+Math.sin(T*5)*6,t:0,dur:0.18,col:z.col||'#6ad0ff'});
-            if(z.slow&&!e.elite)e.slow=Math.max(e.slow||0,0.6);
-            if(z.poisonDps){e.poisonDps=z.poisonDps;e.poisonT=1.2;}
-            if(z.pct){applyDmg(e,e.maxHp*z.pct,0,0,0);}
+            if(z.slow&&!e.elite&&!e.boss)e.slow=Math.max(e.slow||0,0.6);
+            if(z.poisonDps&&!e.boss){e.poisonDps=z.poisonDps;e.poisonT=1.2;}
+            if(z.pct&&!e.boss){applyDmg(e,e.maxHp*z.pct,0,0,0);}
           }
         }
       }
