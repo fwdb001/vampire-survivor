@@ -2718,18 +2718,139 @@ function drawEnemy(e){
     ctx.fillStyle='rgba(255,80,60,'+(0.6+0.4*Math.sin(T*16))+')';
     ctx.fillText('⚠',tw,ty-60-warnK*30);
   }
-  // Dragon fire breath warning cone
-  if(e.boss&&e.bossType==='dragon_ignix'&&e.st===1&&e.pattern==='fire_breath'){
-    const ba=e.breathAng||angTo(e,player);
-    ctx.fillStyle='rgba(255,100,20,0.2)';
-    ctx.beginPath();ctx.moveTo(e.x,e.y);
-    ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);
-    ctx.closePath();ctx.fill();
-    ctx.strokeStyle='rgba(255,120,30,0.5)';
-    ctx.lineWidth=2;ctx.setLineDash([8,6]);
-    ctx.beginPath();ctx.moveTo(e.x,e.y);
-    ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);
-    ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+  // === Boss attack warning zones ===
+  if(e.boss&&e.st===1){
+    const bt=e.bossType||'knight_shadow';
+    const p=e.pattern;
+    // Knight: dark_slash - circle around boss
+    if(bt==='knight_shadow'&&p==='dark_slash'){
+      ctx.fillStyle='rgba(128,80,192,0.2)';
+      ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(160,100,220,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.stroke();ctx.setLineDash([]);
+    }
+    // Knight: shadow_beam - long beam line
+    if(bt==='knight_shadow'&&p==='shadow_beam'){
+      const ba=e.beamAng||angTo(e,player);
+      ctx.fillStyle='rgba(112,48,192,0.15)';
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,800,ba-0.26,ba+0.26);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(140,60,210,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,800,ba-0.26,ba+0.26);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    // Knight: shadow_rain - large area around player
+    if(bt==='knight_shadow'&&p==='shadow_rain'){
+      ctx.fillStyle='rgba(112,48,192,0.12)';
+      ctx.beginPath();ctx.arc(player.x,player.y,450,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(140,60,210,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
+      ctx.beginPath();ctx.arc(player.x,player.y,450,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+      ctx.fillStyle='rgba(160,80,230,0.7)';ctx.fillText('暗影雨',player.x,player.y-470);
+    }
+    // Wolf: moon_pounce - pounce path
+    if(bt==='blood_wolf'&&p==='moon_pounce'){
+      const wa=angTo(e,player);
+      ctx.fillStyle='rgba(255,48,40,0.15)';
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,900,wa-0.3,wa+0.3);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(255,60,50,0.45)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,900,wa-0.3,wa+0.3);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    // Wolf: slash - circle around wolf
+    if(bt==='blood_wolf'&&p==='slash'){
+      ctx.fillStyle='rgba(255,40,30,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,50,40,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
+      ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.stroke();ctx.setLineDash([]);
+    }
+    // Mech: hammer_slam - cone in front
+    if(bt==='mech_abom'&&p==='hammer_slam'){
+      const ma=angTo(e,player);
+      ctx.fillStyle='rgba(200,160,100,0.18)';
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,500,ma-0.35,ma+0.35);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(220,180,120,0.5)';ctx.lineWidth=2;ctx.setLineDash([7,4]);
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,500,ma-0.35,ma+0.35);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    // Mech: saw_blades - fan shape
+    if(bt==='mech_abom'&&p==='saw_blades'){
+      const sa=angTo(e,player);
+      ctx.fillStyle='rgba(160,200,100,0.18)';
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,450,sa-0.5,sa+0.5);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(180,220,120,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,450,sa-0.5,sa+0.5);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    // Mech: poison_spray - large circle
+    if(bt==='mech_abom'&&p==='poison_spray'){
+      ctx.fillStyle='rgba(80,200,80,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,300,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(100,220,100,0.5)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,300,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+      ctx.fillStyle='rgba(100,220,100,0.7)';ctx.fillText('毒液',e.x,e.y-310);
+    }
+    // Dragon: fire_breath - cone
+    if(bt==='dragon_ignix'&&p==='fire_breath'){
+      const ba=e.breathAng||angTo(e,player);
+      ctx.fillStyle='rgba(255,100,20,0.2)';
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);ctx.closePath();ctx.fill();
+      ctx.strokeStyle='rgba(255,120,30,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,6]);
+      ctx.beginPath();ctx.moveTo(e.x,e.y);
+      ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+    }
+    // Dragon: wing_flap - large circle
+    if(bt==='dragon_ignix'&&p==='wing_flap'){
+      ctx.fillStyle='rgba(255,140,40,0.15)';
+      ctx.beginPath();ctx.arc(e.x,e.y,800,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,160,60,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
+      ctx.beginPath();ctx.arc(e.x,e.y,800,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,160,60,0.7)';ctx.fillText('龙翼拍击',e.x,e.y-810);
+    }
+    // Dragon: tracking_fireball - fireball paths
+    if(bt==='dragon_ignix'&&p==='tracking_fireball'){
+      for(let i=0;i<3;i++){
+        const ta=angTo(e,player)+rnd(-0.3,0.3);
+        ctx.fillStyle='rgba(255,120,30,0.15)';
+        ctx.beginPath();ctx.arc(e.x+Math.cos(ta)*80, e.y+Math.sin(ta)*80, 40, 0, 6.283);ctx.fill();
+        ctx.strokeStyle='rgba(255,140,40,0.4)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
+        ctx.beginPath();ctx.arc(e.x+Math.cos(ta)*80, e.y+Math.sin(ta)*80, 40, 0, 6.283);ctx.stroke();ctx.setLineDash([]);
+      }
+    }
+    // Dragon: fire_tornado - large circle
+    if(bt==='dragon_ignix'&&p==='fire_tornado'){
+      ctx.fillStyle='rgba(255,100,30,0.15)';
+      ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,130,40,0.5)';ctx.lineWidth=2;ctx.setLineDash([7,5]);
+      ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,130,40,0.7)';ctx.fillText('火焰旋风',e.x,e.y-410);
+    }
+    // Dragon: fire_rain - large area
+    if(bt==='dragon_ignix'&&p==='fire_rain'){
+      ctx.fillStyle='rgba(255,80,20,0.12)';
+      ctx.beginPath();ctx.arc(player.x,player.y,600,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,100,30,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
+      ctx.beginPath();ctx.arc(player.x,player.y,600,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,100,30,0.7)';ctx.fillText('全屏火雨',player.x,player.y-610);
+    }
+    // Dragon: lava_eruption - multiple small circles
+    if(bt==='dragon_ignix'&&p==='lava_eruption'){
+      for(let i=0;i<6;i++){
+        const lx=player.x+rnd(-500,500),ly=player.y+rnd(-500,500);
+        ctx.fillStyle='rgba(255,60,20,0.2)';
+        ctx.beginPath();ctx.arc(lx,ly,40,0,6.283);ctx.fill();
+        ctx.strokeStyle='rgba(255,80,30,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
+        ctx.beginPath();ctx.arc(lx,ly,40,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      }
+    }
   }
   ctx.save();
   ctx.translate(ex,ey);
