@@ -289,15 +289,18 @@ async function gameOverSaveScore(){
     _boardCache=arr.slice(0,200);
     const rank=_boardCache.findIndex(r=>r.uid===playerUID&&r.s===now)+1;
     if(rank>0&&rank<=10){
-      let nm=null;
-      try{nm=prompt('🏆 你进入前十名（第'+rank+'名）！输入你的名字：',myName);}catch(_){}
-      if(nm&&String(nm).trim()){
-        const clean=String(nm).trim().slice(0,16);
-        try{localStorage.setItem('vs_name',clean);}catch(_){}
-        const res2=await fetch(LB_URL);
-        const data2=await res2.json();
-        if(data2){let chg=false;for(const[key,val]of Object.entries(data2)){if(val.uid===playerUID){data2[key].n=clean;chg=true;}}if(chg){await fetch(LB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data2)});}}
-        _boardLastFetch=0;
+      const hadName=localStorage.getItem('vs_name')&&localStorage.getItem('vs_name')!=='玩家';
+      if(!hadName){
+        let nm=null;
+        try{nm=prompt('🏆 你进入前十名（第'+rank+'名）！输入你的名字：',myName);}catch(_){}
+        if(nm&&String(nm).trim()){
+          const clean=String(nm).trim().slice(0,16);
+          try{localStorage.setItem('vs_name',clean);}catch(_){}
+          const res2=await fetch(LB_URL);
+          const data2=await res2.json();
+          if(data2){let chg=false;for(const[key,val]of Object.entries(data2)){if(val.uid===playerUID){data2[key].n=clean;chg=true;}}if(chg){await fetch(LB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data2)});}}
+          _boardLastFetch=0;
+        }
       }
     }
   }catch(_){}
@@ -993,17 +996,27 @@ function update(dt){
         // Boss teleport: chase player aggressively
         if(d>350&&e.teleCd<=0&&e.st===0&&e.bossType!=='dragon_ignix'){
           e.teleCd=e.teleMaxCd;
-          const tgtX=player.x+Math.cos(a)*(d>200?d-200:0);
-          const tgtY=player.y+Math.sin(a)*(d>200?d-200:0);
-          const tx=clamp(tgtX,60,WORLD-60),ty=clamp(tgtY,60,WORLD-60);
-          fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:10,r1:80,col:'#7030c0'});
-          e.x=tx;e.y=ty;
-          fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:30,r1:90,col:'#9040e0'});
-          shake=Math.max(shake,14);
-          texts.push({x:e.x,y:e.y-40,txt:'暗影突袭!',col:'#ff5060',t:0,dur:1.5,vy:-40});
-          SOUND.die();
-          const nd=dist(player,e);
-          if(nd<120)hurtPlayer(e.dmg*2.0,angTo(e,player));
+          e.teleState=1;e.teleWarnT=0.55;
+          e.teleTX=clamp(player.x+Math.cos(a)*(d>200?d-200:0),60,WORLD-60);
+          e.teleTY=clamp(player.y+Math.sin(a)*(d>200?d-200:0),60,WORLD-60);
+          e.teleSrcX=e.x;e.teleSrcY=e.y;
+          e.vx=0;e.vy=0;
+          alive.push(e);continue;
+        }
+        if(e.teleState===1){
+          e.teleWarnT-=dt;
+          if(e.teleWarnT<=0){
+            e.teleState=0;
+            fx.push({kind:'ring',x:e.teleSrcX,y:e.teleSrcY,t:0,dur:0.4,r0:10,r1:80,col:'#7030c0'});
+            e.x=e.teleTX;e.y=e.teleTY;
+            fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:30,r1:90,col:'#9040e0'});
+            shake=Math.max(shake,14);
+            texts.push({x:e.x,y:e.y-40,txt:'暗影突袭!',col:'#ff5060',t:0,dur:1.5,vy:-40});
+            zones.push({x:e.x,y:e.y,r:80,dmg:e.dmg*1.8,t:0.3,tickT:0,col:'#ff3030'});
+            SOUND.die();
+            const nd=dist(player,e);
+            if(nd<120)hurtPlayer(e.dmg*2.0,angTo(e,player));
+          }
           alive.push(e);continue;
         }
         const bt=e.bossType||'knight_shadow';
@@ -1033,6 +1046,7 @@ function update(dt){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.35,r0:10,r1:80,col:'#7030c0'});
                 e.x=e.blinkX;e.y=e.blinkY;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:30,r1:90,col:'#9040e0'});
+                zones.push({x:e.x,y:e.y,r:90,dmg:e.dmg*2.2,t:0.3,tickT:0,col:'#ff3030'});
                 shake=Math.max(shake,12);
                 const da2=dist(player,e);
                 if(da2<120)hurtPlayer(e.dmg*2.2,angTo(e,player));
@@ -1282,9 +1296,13 @@ function update(dt){
           e.dragonFlyCd=(e.dragonFlyCd||0)-dt;
           if(e.dragonFlyCd<=0){
             e.dragonFlyCd=e.dragonPhase>=3?rnd(2.5,4.5):rnd(3.5,5.5);
+            const vw=W/ZOOM,vh=H/ZOOM;
+            const margin=80;
             const positions=[
-              {x:640,y:100,pos:'top'},{x:640,y:WORLD-100,pos:'bottom'},
-              {x:100,y:WORLD/2,pos:'left'},{x:WORLD-100,y:WORLD/2,pos:'right'}
+              {x:player.x,y:player.y-vh/2+margin,pos:'top'},
+              {x:player.x,y:player.y+vh/2-margin,pos:'bottom'},
+              {x:player.x-vw/2+margin,y:player.y,pos:'left'},
+              {x:player.x+vw/2-margin,y:player.y,pos:'right'}
             ];
             let best=positions[0],bestDist=0;
             for(const pos of positions){
@@ -1367,9 +1385,10 @@ function update(dt){
                 SOUND.die();
               }else{
                 e.stT=3;e.finalBreathT=3;
-                e.safeLeft={x:60,y:WORLD/2};e.safeRight={x:WORLD-60,y:WORLD/2};
-                fx.push({kind:'ring',x:60,y:WORLD/2,t:0,dur:3,r0:10,r1:80,col:'#40ff40'});
-                fx.push({kind:'ring',x:WORLD-60,y:WORLD/2,t:0,dur:3,r0:10,r1:80,col:'#40ff40'});
+                const vw2=W/ZOOM,vh2=H/ZOOM;
+                e.safeLeft={x:player.x-vw2/2+60,y:player.y};e.safeRight={x:player.x+vw2/2-60,y:player.y};
+                fx.push({kind:'ring',x:e.safeLeft.x,y:e.safeLeft.y,t:0,dur:3,r0:10,r1:80,col:'#40ff40'});
+                fx.push({kind:'ring',x:e.safeRight.x,y:e.safeRight.y,t:0,dur:3,r0:10,r1:80,col:'#40ff40'});
                 shake=Math.max(shake,20);
                 SOUND.die();
               }
@@ -1399,8 +1418,8 @@ function update(dt){
             }else if(e.pattern==='final_breath'){
               e.finalBreathT=(e.finalBreathT||0)-dt;
               if(e.finalBreathT>0){
-                const inSafeL=Math.hypot(player.x-60,player.y-WORLD/2)<80;
-                const inSafeR=Math.hypot(player.x-(WORLD-60),player.y-WORLD/2)<80;
+                const inSafeL=Math.hypot(player.x-e.safeLeft.x,player.y-e.safeLeft.y)<80;
+                const inSafeR=Math.hypot(player.x-e.safeRight.x,player.y-e.safeRight.y)<80;
                 if(!inSafeL&&!inSafeR&&Math.random()<dt*8){
                   hurtPlayer(e.dmg*3.0,a);
                 }
@@ -2016,21 +2035,22 @@ function drawFg(){
   }
   // Dragon final breath safe zones
   const dragonBoss=enemies.find(e=>e.boss&&!e.dead&&e.bossType==='dragon_ignix'&&e.pattern==='final_breath'&&e.st===2);
-  if(dragonBoss){
+  if(dragonBoss&&dragonBoss.safeLeft&&dragonBoss.safeRight){
+    const sl=dragonBoss.safeLeft,sr=dragonBoss.safeRight;
     ctx.fillStyle='rgba(100,200,255,0.25)';
-    ctx.fillRect(0,0,100,WORLD);
-    ctx.fillRect(WORLD-100,0,100,WORLD);
+    ctx.fillRect(sl.x-50,sl.y-70,100,140);
+    ctx.fillRect(sr.x-50,sr.y-70,100,140);
     ctx.strokeStyle='rgba(100,200,255,0.6)';
     ctx.lineWidth=4;
     ctx.setLineDash([12,8]);
-    ctx.strokeRect(0,0,100,WORLD);
-    ctx.strokeRect(WORLD-100,0,100,WORLD);
+    ctx.strokeRect(sl.x-50,sl.y-70,100,140);
+    ctx.strokeRect(sr.x-50,sr.y-70,100,140);
     ctx.setLineDash([]);
     ctx.fillStyle='#bfe8ff';
     ctx.font='bold 14px Consolas,monospace';
     ctx.textAlign='center';
-    ctx.fillText('安全区',50,WORLD/2);
-    ctx.fillText('安全区',WORLD-50,WORLD/2);
+    ctx.fillText('安全区',sl.x,sl.y);
+    ctx.fillText('安全区',sr.x,sr.y);
   }
   for(const g of gems){
     ctx.fillStyle= g.val>=15?'#ffb84d':'#7be0ff';
@@ -2073,7 +2093,7 @@ function drawFg(){
     }else if(f.kind==='slash'){
       const k=f.t/f.dur;
       ctx.globalAlpha=1-k;
-      ctx.fillStyle='#f5e6ff';
+      ctx.fillStyle='rgba(180,140,220,0.55)';
       ctx.beginPath();
       ctx.arc(f.x,f.y,f.rad*0.92,f.ang-f.cone/2*D2R,f.ang+f.cone/2*D2R);
       ctx.arc(f.x,f.y,f.rad*(0.2+0.5*k),f.ang+f.cone/2*D2R,f.ang-f.cone/2*D2R,true);
@@ -2684,6 +2704,33 @@ function drawEnemy(e){
   const sc=(windup?1.14:1)*(attacking?1.12:1)*scl;
   ctx.fillStyle='rgba(0,0,0,0.22)';
   ctx.beginPath();ctx.ellipse(e.x,e.y+e.r*0.95,e.r*1.1*Math.sqrt(scl),e.r*0.45*Math.sqrt(scl),0,0,6.283);ctx.fill();
+  // Boss teleport warning zone
+  if(e.boss&&e.teleState===1){
+    const warnK=1-e.teleWarnT/0.55;
+    const tw=e.teleTX,ty=e.teleTY;
+    drawGlow(tw,ty,40+60*warnK,'rgba(255,40,40,0.4)');
+    ctx.strokeStyle='rgba(255,40,60,'+(0.5+0.5*Math.sin(T*20))+')';
+    ctx.lineWidth=3;ctx.setLineDash([6,4]);
+    ctx.beginPath();ctx.arc(tw,ty,50+20*warnK,0,6.283);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,60,40,0.25)';
+    ctx.beginPath();ctx.arc(tw,ty,50+20*warnK,0,6.283);ctx.fill();
+    ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
+    ctx.fillStyle='rgba(255,80,60,'+(0.6+0.4*Math.sin(T*16))+')';
+    ctx.fillText('⚠',tw,ty-60-warnK*30);
+  }
+  // Dragon fire breath warning cone
+  if(e.boss&&e.bossType==='dragon_ignix'&&e.st===1&&e.pattern==='fire_breath'){
+    const ba=e.breathAng||angTo(e,player);
+    ctx.fillStyle='rgba(255,100,20,0.2)';
+    ctx.beginPath();ctx.moveTo(e.x,e.y);
+    ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);
+    ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(255,120,30,0.5)';
+    ctx.lineWidth=2;ctx.setLineDash([8,6]);
+    ctx.beginPath();ctx.moveTo(e.x,e.y);
+    ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);
+    ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+  }
   ctx.save();
   ctx.translate(ex,ey);
   ctx.scale(sx*sc,sc);
