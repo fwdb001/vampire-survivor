@@ -2,10 +2,13 @@
 <html lang="zh">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>血夜幸存者</title>
+<title>血夜幸存者 v3</title>
 <style>
   html,body{margin:0;padding:0;height:100%;background:#07040c;overflow:hidden;font-family:Consolas,"Courier New",monospace;-webkit-tap-highlight-color:transparent;}
   body{display:flex;align-items:center;justify-content:center;}
@@ -33,6 +36,9 @@ if(!CanvasRenderingContext2D.prototype.roundRect){
 
 window.addEventListener('error',e=>{
   try{ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#ff3030';ctx.fillRect(0,H-46,W,46);ctx.fillStyle='#000';ctx.font='bold 15px Consolas,monospace';ctx.fillText('ERR: '+(e.message||e),(W-600)/2,H-22);}catch(_){}
+});
+window.addEventListener('unhandledrejection',e=>{
+  try{ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);ctx.fillStyle='#ff3030';ctx.fillRect(0,H-46,W,46);ctx.fillStyle='#000';ctx.font='bold 15px Consolas,monospace';ctx.fillText('ERR: '+(e.reason||e),(W-600)/2,H-22);}catch(_){}
 });
 
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -98,6 +104,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{const n=keyMap[e.key.toLowerCase()];if(n)keys[n]=false;});
 document.addEventListener('visibilitychange',()=>{if(state==='play')state='pause';});
+window.addEventListener('pageshow',e=>{if(e.persisted){state='title';titleT=0;}});
 
 const PTR={list:{},joy:null};
 let ROTATED=false;
@@ -315,7 +322,7 @@ function rarityMult(lv){return RARITY_MULT[rarityOf(lv)];}
 
 const WEPS={
   bolt:{name:'魔弹',icon:'✦',max:8,
-    cfg(l){return{dmg:(0+30*l)*1.5,cd:3.6*Math.pow(0.86,l-1),n:1+Math.floor((l-1)/2),spd:14+0.5*l,rng:460+20*l};},
+    cfg(l){return{dmg:(0+30*l)*1.5,cd:2.0*Math.pow(0.86,l-1),n:1+Math.floor((l-1)/2),spd:14+0.5*l,rng:460+20*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(c.rng);
@@ -327,7 +334,7 @@ const WEPS={
       SOUND.shot();
     }},
   knife:{name:'飞刀',icon:'✶',max:8,
-    cfg(l){return{dmg:0+20*l,cd:2.0*Math.pow(0.9,l-1),n:1+Math.floor((l-1)/3),spd:20};},
+    cfg(l){return{dmg:0+20*l,cd:1.0*Math.pow(0.9,l-1),n:1+Math.floor((l-1)/3),spd:20};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(420);
@@ -342,7 +349,7 @@ const WEPS={
       SOUND.shot();
     }},
   whip:{name:'圣鞭',icon:'↟',max:6,
-    cfg(l){return{dmg:0+42*l,cd:4.6*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.08,0.015*l)};},
+    cfg(l){return{dmg:0+42*l,cd:2.3*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.08,0.015*l)};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(340);
@@ -351,7 +358,7 @@ const WEPS={
       SOUND.shot();
     }},
   tome:{name:'圣书',icon:'❁',max:5,
-    cfg(l){return{dmg:0+30*l,cd:6.0*Math.pow(0.92,l-1),n:1+Math.floor((l-1)/2),spd:23,rng:300,rad:80+9*l};},
+    cfg(l){return{dmg:0+30*l,cd:3.0*Math.pow(0.92,l-1),n:1+Math.floor((l-1)/2),spd:23,rng:300,rad:80+9*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(c.rng);
@@ -376,7 +383,7 @@ const WEPS={
       }
     }},
   spark:{name:'落雷',icon:'⚡',max:6,
-    cfg(l){return{dmg:0+84*l,cd:9.6*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),rng:430};},
+    cfg(l){return{dmg:0+84*l,cd:4.8*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),rng:430};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const cand=enemies.filter(e=>dist(player,e)<c.rng);
@@ -391,7 +398,7 @@ const WEPS={
       if(c.n)SOUND.shot();
     }},
   bottle:{name:'药瓶',icon:'⛼',max:6,
-    cfg(l){return{dmg:0+20*l,cd:6.8*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:88+8*l,zoneDur:5.5};},
+    cfg(l){return{dmg:0+20*l,cd:3.4*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:88+8*l,zoneDur:5.5};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -403,7 +410,7 @@ const WEPS={
       SOUND.shot();
     }},
   beer:{name:'精酿啤酒',icon:'🍺',max:6,
-    cfg(l){return{dmg:0+15*l,cd:6.4*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:84+8*l,zoneDur:5,poisonDps:3*l};},
+    cfg(l){return{dmg:0+15*l,cd:3.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:84+8*l,zoneDur:5,poisonDps:3*l};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -415,7 +422,7 @@ const WEPS={
       SOUND.shot();
     }},
   holy:{name:'圣水',icon:'✝',max:6,
-    cfg(l){return{dmg:2*l,pct:0.10,cd:7.2*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:92+8*l,zoneDur:6};},
+    cfg(l){return{dmg:2*l,pct:0.10,cd:3.6*Math.pow(0.94,l-1),n:1+Math.floor((l-1)/2),spd:13,zoneR:92+8*l,zoneDur:6};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -427,7 +434,7 @@ const WEPS={
       SOUND.shot();
     }},
   axe:{name:'飞斧',icon:'†',max:6,
-    cfg(l){return{dmg:0+60*l,cd:7.6*Math.pow(0.93,l-1),n:1+Math.floor((l-1)/2),spd:11,rng:400};},
+    cfg(l){return{dmg:0+60*l,cd:3.8*Math.pow(0.93,l-1),n:1+Math.floor((l-1)/2),spd:11,rng:400};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(300);
@@ -439,7 +446,7 @@ const WEPS={
       SOUND.shot();
     }},
   frost:{name:'寒冰',icon:'✻',max:6,
-    cfg(l){return{dmg:0+36*l,cd:6.0*Math.pow(0.94,l-1),rng:205+26*l,slowT:1.6};},
+    cfg(l){return{dmg:0+36*l,cd:3.0*Math.pow(0.94,l-1),rng:205+26*l,slowT:1.6};},
     fire(l,p,mult){
       const c=this.cfg(l);
       fx.push({kind:'ring',x:player.x,y:player.y,t:0,dur:0.45,r0:10,r1:c.rng,col:'#9fe0ff'});
@@ -455,7 +462,7 @@ const WEPS={
       SOUND.shot();
     }},
   bird:{name:'飞舞的鹁',icon:'鹁',max:6,
-    cfg(l){return{dmg:40+570*l,cd:4.0*Math.pow(0.85,l-1),n:1+(l>=4?1:0)+(l>=6?1:0),rng:320,spdStrike:420,rad:50+8*l};},
+    cfg(l){return{dmg:40+570*l,cd:2.0*Math.pow(0.85,l-1),n:1+(l>=4?1:0)+(l>=6?1:0),rng:320,spdStrike:420,rad:50+8*l};},
     fire(l,p,mult){}}
 };
 
@@ -1586,9 +1593,9 @@ function update(dt){
     }
 
     // Normal enemy spawning (suppressed during boss)
-    const want=Math.min(2+T*0.06,7);
+    const want=Math.min(6+T*0.1,15);
     if(!bossActive&&!bossWarn&&enemies.length<want){
-      const n=Math.min(3,want-enemies.length);
+      const n=Math.min(5,want-enemies.length);
       for(let i=0;i<n;i++){
         const rp=spawnRingPos();
         let kind=pickKind();
