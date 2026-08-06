@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh">
 <head>
 <meta charset="utf-8">
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>血夜幸存者 v3</title>
+<title>血夜幸存者 v4</title>
 <style>
   html,body{margin:0;padding:0;height:100%;background:#07040c;overflow:hidden;font-family:Consolas,"Courier New",monospace;-webkit-tap-highlight-color:transparent;}
   body{display:flex;align-items:center;justify-content:center;}
@@ -1024,15 +1024,20 @@ function update(dt){
         if(bt==='knight_shadow'){
           e.shadowClones=(e.shadowClones||0);
           if(e.phase<=0){
-            e.phase=rnd(0.5,1.0);
+            e.phase=rnd(0.4,0.8);
             e.cd=0;
-            const r=Math.random();
-            if(d>250&&r<0.25)e.pattern='shadow_dash';
-            else if(r<0.35&&e.shadowClones<3)e.pattern='shadow_clone';
-            else if(r<0.55)e.pattern='dark_slash';
-            else if(r<0.75)e.pattern='shadow_beam';
-            else if(r<0.9)e.pattern='shadow_rain';
-            else e.pattern='bullet_hell';
+            const last=e._lastPattern||'';
+            const opts=['shadow_dash','shadow_clone','dark_slash','shadow_beam','shadow_rain','bullet_hell'];
+            const w=[0.12,0.08,0.15,0.15,0.15,0.35];
+            if(e.shadowClones>=3)w[1]=0;
+            if(d<=250)w[0]=0;
+            let pick=opts[5];let cum=0;const r=Math.random();
+            for(let i=0;i<6;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
+            if(pick===last&&opts.filter(o=>o!==last).length>0){
+              const others=opts.filter(o=>o!==last&&(o!=='shadow_dash'||d>250)&&(o!=='shadow_clone'||e.shadowClones<3));
+              pick=others[Math.floor(Math.random()*others.length)];
+            }
+            e.pattern=pick;e._lastPattern=pick;
           }
           if(e.st===1){
             e.vx*=0.85;e.vy*=0.85;
@@ -1156,11 +1161,18 @@ function update(dt){
           e.defenseT=(e.defenseT||0)-dt;
           if(e.defenseT<=0)e.defense=0;
           if(e.phase<=0){
-            e.phase=rnd(0.5,1.0);
+            e.phase=rnd(0.4,0.8);
             e.cd=0;
-            if(d>300&&Math.random()<0.4)e.pattern='moon_pounce';
-            else if(Math.random()<0.8)e.pattern='slash';
-            else e.pattern='bullet_hell';
+            const last=e._lastPattern||'';
+            const opts=['moon_pounce','slash','bullet_hell'];
+            const w=[d>300?0.25:0.05,0.35,0.40];
+            let pick=opts[2];let cum=0;const r=Math.random();
+            for(let i=0;i<3;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
+            if(pick===last){
+              const others=opts.filter(o=>o!==last&&(o!=='moon_pounce'||d>300));
+              pick=others[Math.floor(Math.random()*others.length)];
+            }
+            e.pattern=pick;e._lastPattern=pick;
           }
           if(e.st===1){
             e.vx*=0.85;e.vy*=0.85;
@@ -1241,19 +1253,24 @@ function update(dt){
             alive.push(e);continue;
           }
           if(e.phase<=0){
-            e.phase=rnd(0.6,1.2);
+            e.phase=rnd(0.4,0.9);
             e.cd=0;
-            const r=Math.random();
+            const last=e._lastPattern||'';
+            let opts,w,pick;
             if(!e.armsBroken){
-              if(r<0.35)e.pattern='hammer_slam';
-              else if(r<0.65)e.pattern='saw_blades';
-              else if(r<0.85)e.pattern='poison_spray';
-              else e.pattern='bullet_hell';
+              opts=['hammer_slam','saw_blades','poison_spray','bullet_hell'];
+              w=[0.20,0.20,0.18,0.42];
             }else{
-              if(r<0.5)e.pattern='poison_spray';
-              else if(r<0.8)e.pattern='hammer_slam';
-              else e.pattern='bullet_hell';
+              opts=['poison_spray','hammer_slam','bullet_hell'];
+              w=[0.30,0.25,0.45];
             }
+            pick=opts[opts.length-1];let cum=0;const r=Math.random();
+            for(let i=0;i<opts.length;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
+            if(pick===last){
+              const others=opts.filter(o=>o!==last);
+              pick=others[Math.floor(Math.random()*others.length)];
+            }
+            e.pattern=pick;e._lastPattern=pick;
           }
           if(e.st===1){
             e.vx*=0.85;e.vy*=0.85;
@@ -1342,27 +1359,31 @@ function update(dt){
           }
           e.headX=e.x;e.headY=e.y-50;e.bodyX=e.x;e.bodyY=e.y+20;
           if(e.phase<=0){
-            e.phase=rnd(e.dragonPhase>=3?0.8:1.5,e.dragonPhase>=3?1.5:2.5)/phaseSpd;
+            e.phase=rnd(0.6,1.4)/phaseSpd;
             e.cd=0;
-            const r=Math.random();
+            const last=e._lastPattern||'';
+            let pick,opts;const r=Math.random();
             if(e.dragonPhase===1){
-              if(d<350&&r<0.4)e.pattern='fire_breath';
-              else if(r<0.65)e.pattern='meteor';
-              else if(r<0.85)e.pattern='wing_flap';
-              else e.pattern='bullet_hell';
+              opts=['fire_breath','meteor','wing_flap','bullet_hell'];
+              const w=d<350?[0.22,0.22,0.21,0.35]:[0.15,0.28,0.22,0.35];
+              let cum=0;pick=opts[3];
+              for(let i=0;i<4;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
             }else if(e.dragonPhase===2){
-              if(r<0.35)e.pattern='tracking_fireball';
-              else if(r<0.6)e.pattern='fire_tornado';
-              else if(r<0.75)e.pattern='fire_breath';
-              else if(r<0.9)e.pattern='meteor';
-              else e.pattern='bullet_hell';
+              opts=['tracking_fireball','fire_tornado','fire_breath','meteor','bullet_hell'];
+              const w=[0.18,0.18,0.15,0.14,0.35];
+              let cum=0;pick=opts[4];
+              for(let i=0;i<5;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
             }else{
-              if(r<0.3)e.pattern='fire_rain';
-              else if(r<0.5)e.pattern='lava_eruption';
-              else if(r<0.7)e.pattern='final_breath';
-              else if(r<0.85)e.pattern='tracking_fireball';
-              else e.pattern='bullet_hell';
+              opts=['fire_rain','lava_eruption','final_breath','tracking_fireball','bullet_hell'];
+              const w=[0.18,0.18,0.18,0.14,0.32];
+              let cum=0;pick=opts[4];
+              for(let i=0;i<5;i++){cum+=w[i];if(r<cum){pick=opts[i];break;}}
             }
+            if(pick===last&&opts&&opts.length>1){
+              const others=opts.filter(o=>o!==last);
+              pick=others[Math.floor(Math.random()*others.length)];
+            }
+            e.pattern=pick;e._lastPattern=pick;
           }
           if(e.st===1){
             if(e.stT<=0){
@@ -1578,6 +1599,7 @@ function update(dt){
     if(!bossActive&&!bossWarn&&player.level>=nextBossLevel){
       nextBossLevel+=6;
       currentBossType=BOSS_TYPES[bossOrderIdx%4];
+      console.log('[Boss] Spawning #'+(bossOrderIdx+1)+': '+BOSS_NAMES[currentBossType]+' (idx='+bossOrderIdx+')');
       bossOrderIdx++;
       const rp=spawnRingPos();
       bossWarn={x:rp.wx,y:rp.wy,t:1.8};
