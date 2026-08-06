@@ -229,9 +229,9 @@ let kills=0,eliteWarn=null,chest=null,cardOffer=[],cardShownAt=0;
 let nextElite=20;
 let currentMove=0;
 let xpGot=0;
-let bossWarn=null,bossActive=false,bossKilled=0,currentBossType='knight_shadow',nextBossLevel=5;
+let bossWarn=null,bossActive=false,bossKilled=0,currentBossType='knight_shadow',nextBossLevel=6,bossOrderIdx=0;
 let wave=1,waveKills=0,waveKillTarget=15,waveBossTriggered=false;
-let bossTypeIdx=0;
+let victory=false;
 const BOSS_TYPES=['knight_shadow','blood_wolf','mech_abom','dragon_ignix'];
 const BOSS_NAMES={knight_shadow:'暗影骑士·影',blood_wolf:'血月之狼',mech_abom:'机械缝合怪',dragon_ignix:'远古巨龙·伊格尼克斯'};
 const BOSS_DROPS={knight_shadow:'boss_armor',blood_wolf:'wolf_charm',mech_abom:'furnace_core',dragon_ignix:'dragon_scale'};
@@ -315,7 +315,7 @@ async function openBoard(from){
 }
 let enemyPool=[],boltPool=[];
 const DASH_CD=3;
-const BIRD_SIZE_MAX=2.6;
+const BIRD_SIZE_MAX=4.0;
 
 const RARITY=['普通','精良','稀有','史诗','传说'];
 const RARITY_COL=['#b9a8d8','#5ade8a','#5aa8ff','#c86aff','#ffb43a'];
@@ -565,7 +565,7 @@ function startRun(){
     tReady:0,growT:0
   };
   enemies=[];gems=[];bolts=[];ebolts=[];fx=[];parts=[];texts=[];tomes=[];bottles=[];zones=[];birds=[];
-  kills=0;T=0;eliteWarn=null;chest=null;cardOffer=[];red=0;flash=0;nextElite=20;xpGot=0;bossWarn=null;nextBossLevel=5;bossActive=false;bossKilled=0;currentBossType='knight_shadow';enemyPool=[];boltPool=[];
+  kills=0;T=0;eliteWarn=null;chest=null;cardOffer=[];red=0;flash=0;nextElite=20;xpGot=0;bossWarn=null;nextBossLevel=6;bossActive=false;bossKilled=0;currentBossType='knight_shadow';enemyPool=[];boltPool=[];victory=false;bossOrderIdx=0;
   wave=1;waveKills=0;waveKillTarget=15;waveBossTriggered=false;
   bossTypeIdx=0;ghostWolves=[];furnaceCoreTimer=0;
   PTR.joy=null;
@@ -758,7 +758,7 @@ function offerCards(){
     const own=ownedLv(id);
     const defW=WEPS[id];
     if(own<defW.max){
-      if(id==='bird'&&Math.random()>0.4)continue;
+      if(id==='bird'&&Math.random()>0.5)continue;
       const nl=own+1;
       pool.push({
         name:defW.name,
@@ -1024,10 +1024,10 @@ function update(dt){
         if(bt==='knight_shadow'){
           e.shadowClones=(e.shadowClones||0);
           if(e.phase<=0){
-            e.phase=rnd(0.8,1.6);
+            e.phase=rnd(0.5,1.0);
             e.cd=0;
             const r=Math.random();
-            if(d>350&&r<0.3)e.pattern='shadow_dash';
+            if(d>250&&r<0.3)e.pattern='shadow_dash';
             else if(r<0.45&&e.shadowClones<3)e.pattern='shadow_clone';
             else if(r<0.65)e.pattern='dark_slash';
             else if(r<0.85)e.pattern='shadow_beam';
@@ -1101,7 +1101,7 @@ function update(dt){
             }
             if(e.stT<=0){e.st=0;e.cd=rnd(0.2,0.5);}
           }else{
-            if(e.cd<=0&&d<400){
+            if(e.cd<=0&&d<600){
               e.st=1;e.stT=0.3;
             }
             const spd=e.spd*(0.8+0.3*Math.sin(T*3.5+e.r));
@@ -1118,7 +1118,7 @@ function update(dt){
 }else if(bt==='blood_wolf'){
           e.wolfCd=(e.wolfCd||0)-dt;
           if(e.wolfCd<=0){
-            e.wolfCd=8;
+            e.wolfCd=5;
             const numWolves=3+Math.floor(Math.random()*3);
             for(let i=0;i<numWolves;i++){
               const ang2=Math.random()*Math.PI*2;
@@ -1148,7 +1148,7 @@ function update(dt){
           e.defenseT=(e.defenseT||0)-dt;
           if(e.defenseT<=0)e.defense=0;
           if(e.phase<=0){
-            e.phase=rnd(0.8,1.5);
+            e.phase=rnd(0.5,1.0);
             e.cd=0;
             if(d>300&&Math.random()<0.5)e.pattern='moon_pounce';
             else e.pattern='slash';
@@ -1203,7 +1203,7 @@ function update(dt){
             e.repairCd=(e.repairCd||0)-dt;
             if(e.repairCd<=0){
               e.repairing=true;e.repairT=4;
-              e.repairCd=10;
+              e.repairCd=7;
               texts.push({x:e.x,y:e.y-50,txt:'正在修复...',col:'#ff6020',t:0,dur:4,vy:-20});
             }
           }
@@ -1225,7 +1225,7 @@ function update(dt){
             alive.push(e);continue;
           }
           if(e.phase<=0){
-            e.phase=rnd(1.0,2.0);
+            e.phase=rnd(0.6,1.2);
             e.cd=0;
             const r=Math.random();
             if(!e.armsBroken){
@@ -1317,7 +1317,7 @@ function update(dt){
           }
           e.headX=e.x;e.headY=e.y-50;e.bodyX=e.x;e.bodyY=e.y+20;
           if(e.phase<=0){
-            e.phase=rnd(e.dragonPhase>=3?1.5:3,e.dragonPhase>=3?3:5)/phaseSpd;
+            e.phase=rnd(e.dragonPhase>=3?0.8:1.5,e.dragonPhase>=3?1.5:2.5)/phaseSpd;
             e.cd=0;
             const r=Math.random();
             if(e.dragonPhase===1){
@@ -1539,10 +1539,11 @@ function update(dt){
       texts.push({x:player.x,y:player.y-40,txt:'第 '+wave+' 波',col:'#bfe5ff',t:0,dur:1.5,vy:-40});
       SOUND.lvl();
     }
-    // Boss spawn: every 5 player levels
+    // Boss spawn: every 6 player levels, fixed order
     if(!bossActive&&!bossWarn&&player.level>=nextBossLevel){
-      nextBossLevel+=5;
-      currentBossType=BOSS_TYPES[Math.floor(Math.random()*BOSS_TYPES.length)];
+      nextBossLevel+=6;
+      currentBossType=BOSS_TYPES[bossOrderIdx%4];
+      bossOrderIdx++;
       const rp=spawnRingPos();
       bossWarn={x:rp.wx,y:rp.wy,t:1.8};
       fx.push({kind:'ring',x:rp.wx,y:rp.wy,t:0,dur:1.8,r0:14,r1:70,col:'#ff2040'});
@@ -1555,26 +1556,27 @@ function update(dt){
     if(bossWarn){bossWarn.t-=dt;if(bossWarn.t<=0){
       const lv=player.level;
       const bossType=currentBossType;
-      const hpBase=12000+lv*lv*550+lv*lv*lv*45;
+      const hpBase=15000+lv*lv*600+lv*lv*lv*50;
       const bossColors={knight_shadow:'#2a0a30',blood_wolf:'#3a0a10',mech_abom:'#1a2a1a',dragon_ignix:'#3a1a0a'};
-      const bossSpeeds={knight_shadow:85,blood_wolf:110,mech_abom:55,dragon_ignix:0};
+      const bossSpeeds={knight_shadow:100,blood_wolf:125,mech_abom:65,dragon_ignix:0};
       const bossSizes={knight_shadow:56,blood_wolf:52,mech_abom:64,dragon_ignix:80};
       const bossScls={knight_shadow:1.8,blood_wolf:1.8,mech_abom:2.0,dragon_ignix:2.2};
+      const bossDmgs={knight_shadow:50,blood_wolf:55,mech_abom:55,dragon_ignix:60};
       const e=allocEnemy('boss',bossWarn.x,bossWarn.y,{
         hp:Math.round(hpBase),maxHp:Math.round(hpBase),
-        spd:bossSpeeds[bossType],dmg:45,r:bossSizes[bossType],
+        spd:bossSpeeds[bossType],dmg:bossDmgs[bossType],r:bossSizes[bossType],
         col:bossColors[bossType],spdV:3,xp:250,cd:0.4,
         elite:false,chest:false,boss:true,scl:bossScls[bossType],
         bossType:bossType
       });
-      e.inv=1.5;e.teleCd=0;e.teleMaxCd=6;
+      e.inv=1.5;e.teleCd=0;e.teleMaxCd=3.5;
       if(bossType==='blood_wolf'){
         e.wolves=[];e.howlUsed=false;e.wolfCd=0;
       }else if(bossType==='mech_abom'){
-        e.leftArmHp=6000;e.leftArmMax=6000;e.rightArmHp=6000;e.rightArmMax=6000;
-        e.coreHp=10000;e.coreMax=10000;e.armsBroken=false;e.repairing=false;e.repairCd=0;
+        e.leftArmHp=8000;e.leftArmMax=8000;e.rightArmHp=8000;e.rightArmMax=8000;
+        e.coreHp=12000;e.coreMax=12000;e.armsBroken=false;e.repairing=false;e.repairCd=0;
       }else if(bossType==='dragon_ignix'){
-        e.dragonPhase=1;e.dragonPos='top';e.dragonFlyCd=4;e.dragonWeakSpot=true;
+        e.dragonPhase=1;e.dragonPos='top';e.dragonFlyCd=3;e.dragonWeakSpot=true;
         e.headX=e.x;e.headY=e.y-50;e.bodyX=e.x;e.bodyY=e.y+20;
       }else{
         e.shadowClones=0;
@@ -1598,6 +1600,11 @@ function update(dt){
       texts.push({x:player.x,y:player.y-60,txt:'BOSS 击破！获得 '+dropName,col:'#ffd24a',t:0,dur:2.2,vy:-50});
       flash=0.4;shake=Math.max(shake,20);
       SOUND.lvl();
+      // Victory: beat dragon at level 24
+      if(bossType==='dragon_ignix'&&bossOrderIdx>=4){
+        victory=true;
+        gameOver();
+      }
     }
 
     // Normal enemy spawning (suppressed during boss)
@@ -3362,11 +3369,11 @@ function drawBossWolf(e,windup,attacking){
   const grad=ctx.createRadialGradient(0,0,14,0,0,72);
   grad.addColorStop(0,patCol);grad.addColorStop(0.5,'rgba(40,8,10,0.15)');grad.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,72,0,Math.PI*2);ctx.fill();
-  // Tail - behind body (half hidden)
+  // Tail - behind body, diagonal upward
 	  ctx.strokeStyle='#3a1010';ctx.lineWidth=4;
-	  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(14,28,18,32);ctx.stroke();
+	  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(14,-10,18,-24);ctx.stroke();
 	  ctx.strokeStyle='#6a1a1a';ctx.lineWidth=2;
-	  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(14,28,18,32);ctx.stroke();
+	  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(14,-10,18,-24);ctx.stroke();
   // Body - dark red fur
   ctx.fillStyle='#3a1010';
   ctx.beginPath();ctx.ellipse(0,4,26,22,0,0,Math.PI*2);ctx.fill();
@@ -3530,13 +3537,13 @@ function drawBossDragon(e,windup,attacking){
   const grad=ctx.createRadialGradient(0,0,20,0,0,100);
   grad.addColorStop(0,phaseCol);grad.addColorStop(0.5,phase>=3?'rgba(40,10,5,0.2)':'rgba(30,15,10,0.15)');grad.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,100,0,Math.PI*2);ctx.fill();
-  // Tail and spike - behind body (half hidden)
+  // Tail and spike - behind body, diagonal upward
 	  ctx.strokeStyle='#3a1a0a';ctx.lineWidth=6;
-	  ctx.beginPath();ctx.moveTo(0,36);ctx.quadraticCurveTo(10,48,20,46);ctx.stroke();
+	  ctx.beginPath();ctx.moveTo(0,36);ctx.quadraticCurveTo(10,-15,20,-30);ctx.stroke();
 	  ctx.strokeStyle='#6a2a0a';ctx.lineWidth=3;
-	  ctx.beginPath();ctx.moveTo(0,36);ctx.quadraticCurveTo(10,48,20,46);ctx.stroke();
+	  ctx.beginPath();ctx.moveTo(0,36);ctx.quadraticCurveTo(10,-15,20,-30);ctx.stroke();
 	  ctx.fillStyle='#5a2010';
-	  ctx.beginPath();ctx.moveTo(20,46);ctx.lineTo(24,56);ctx.lineTo(16,52);ctx.fill();
+	  ctx.beginPath();ctx.moveTo(20,-30);ctx.lineTo(24,-42);ctx.lineTo(16,-38);ctx.fill();
   // Body - massive dragon
   ctx.fillStyle='#3a1a0a';
   ctx.beginPath();ctx.moveTo(-30,-20);ctx.lineTo(-40,10);ctx.lineTo(-30,30);ctx.lineTo(-10,40);ctx.lineTo(10,40);ctx.lineTo(30,30);ctx.lineTo(40,10);ctx.lineTo(30,-20);ctx.fill();
@@ -4113,17 +4120,27 @@ function drawTitle(){
 
 function drawGameOver(){
   ctx.globalAlpha=0.78;
-  ctx.fillStyle='#0a040d';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=victory?'#0a0d04':'#0a040d';ctx.fillRect(0,0,W,H);
   ctx.globalAlpha=1;
   ctx.font='bold 54px Consolas,monospace';ctx.textAlign='center';
-  ctx.fillStyle='#ff5060';
-  ctx.fillText('阵 亡',W/2,H/2-130);
+  if(victory){
+    ctx.fillStyle='#ffd24a';
+    ctx.fillText('胜 利 !',W/2,H/2-130);
+  }else{
+    ctx.fillStyle='#ff5060';
+    ctx.fillText('阵 亡',W/2,H/2-130);
+  }
   ctx.fillStyle='#e8dcf7';
   ctx.font='22px Consolas,monospace';
   ctx.fillText('存活时间 '+Math.floor(T/60)+'分'+Math.floor(T%60)+'秒',W/2,H/2-60);
   ctx.fillText('击杀怪物  '+kills, W/2,H/2-20);
   ctx.fillText('角色等级  Lv.'+player.level,W/2,H/2+20);
   ctx.fillText('获得经验  '+xpGot,W/2,H/2+60);
+  if(victory){
+    ctx.fillStyle='#ffd24a';
+    ctx.font='bold 20px Consolas,monospace';
+    ctx.fillText('恭喜！你击败了远古巨龙，拯救了世界！',W/2,H/2-100);
+  }
   const bw=280,bh=62,bx=(W-bw)/2,by=H/2+70;
   ctx.fillStyle='#4ea0ff';
   ctx.strokeStyle='#fff';ctx.lineWidth='3';
