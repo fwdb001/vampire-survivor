@@ -989,7 +989,7 @@ function update(dt){
         e.stT=(e.stT||0)-dt;
         if(d<e.r+p.r+12&&(e.invContact||0)<=0){
           e.invContact=0.5;
-          hurtPlayer(e.dmg*1.5,a);
+          hurtPlayer(e.dmg*1.3,a);
           shake=Math.max(shake,6);
         }
         e.invContact=(e.invContact||0)-dt;
@@ -1015,7 +1015,7 @@ function update(dt){
             zones.push({x:e.x,y:e.y,r:80,dmg:e.dmg*1.8,t:0.3,tickT:0,col:'#ff3030'});
             SOUND.die();
             const nd=dist(player,e);
-            if(nd<120)hurtPlayer(e.dmg*2.0,angTo(e,player));
+            if(nd<120)hurtPlayer(e.dmg*1.4,angTo(e,player));
           }
           alive.push(e);continue;
         }
@@ -1049,7 +1049,7 @@ function update(dt){
                 zones.push({x:e.x,y:e.y,r:90,dmg:e.dmg*2.2,t:0.3,tickT:0,col:'#ff3030'});
                 shake=Math.max(shake,12);
                 const da2=dist(player,e);
-                if(da2<120)hurtPlayer(e.dmg*2.2,angTo(e,player));
+                if(da2<120)hurtPlayer(e.dmg*1.5,angTo(e,player));
                 SOUND.die();
               }else if(e.pattern==='shadow_clone'){
                 e.stT=0.4;
@@ -1066,7 +1066,7 @@ function update(dt){
                 e.stT=0.35;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:15,r1:200,col:'#8050c0'});
                 shake=Math.max(shake,10);
-                if(d<200)hurtPlayer(e.dmg*1.8,a);
+                if(d<200)hurtPlayer(e.dmg*1.3,a);
                 SOUND.hit();
               }else if(e.pattern==='shadow_beam'){
                 e.stT=1.0;
@@ -1088,14 +1088,14 @@ function update(dt){
                 let diff=da2-e.beamAng;
                 while(diff>Math.PI)diff-=Math.PI*2;
                 while(diff<-Math.PI)diff+=Math.PI*2;
-                if(Math.abs(diff)<0.3)hurtPlayer(e.dmg*2.5,a);
+                if(Math.abs(diff)<0.3)hurtPlayer(e.dmg*1.6,a);
               }
             }else if(e.pattern==='shadow_rain'){
               e.shadowRainT=(e.shadowRainT||0)-dt;
               if(e.shadowRainT>0&&Math.random()<dt*14){
                 const rx=player.x+rnd(-450,450),ry=player.y+rnd(-450,450);
                 fx.push({kind:'spark',x:rx,y:ry,t:0,dur:0.3,col:'#7030c0'});
-                if(Math.hypot(rx-player.x,ry-player.y)<40)hurtPlayer(e.dmg*0.9,a);
+                if(Math.hypot(rx-player.x,ry-player.y)<40)hurtPlayer(e.dmg*0.6,a);
               }
               if(e.shadowRainT<=0)e.stT=0;
             }
@@ -1167,7 +1167,7 @@ function update(dt){
               }else{
                 e.stT=0.35;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.3,r0:10,r1:120,col:'#ff3040'});
-                if(d<120)hurtPlayer(e.dmg*1.5,a);
+                if(d<120)hurtPlayer(e.dmg*1.3,a);
                 shake=Math.max(shake,8);
                 SOUND.hit();
               }
@@ -1177,7 +1177,7 @@ function update(dt){
             if(e.pattern==='moon_pounce'){
               if(d<150){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:10,r1:150,col:'#ff5060'});
-                hurtPlayer(e.dmg*2.0,a);
+                hurtPlayer(e.dmg*1.4,a);
                 shake=Math.max(shake,12);
                 e.st=0;e.cd=rnd(0.3,0.6);
               }
@@ -1353,7 +1353,7 @@ function update(dt){
                 e.stT=0.8;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.8,r0:30,r1:800,col:'#ffa040'});
                 shake=Math.max(shake,16);
-                if(d<800)hurtPlayer(e.dmg*1.2,a);
+                if(d<800)hurtPlayer(e.dmg*0.9,a);
                 SOUND.die();
               }else if(e.pattern==='tracking_fireball'){
                 e.stT=0.5;
@@ -1400,12 +1400,12 @@ function update(dt){
                 let diff=da2-e.breathAng;
                 while(diff>Math.PI)diff-=Math.PI*2;
                 while(diff<-Math.PI)diff+=Math.PI*2;
-                if(Math.abs(diff)<0.5)hurtPlayer(e.dmg*1.8,a);
+                if(Math.abs(diff)<0.5)hurtPlayer(e.dmg*1.3,a);
               }
             }else if(e.pattern==='meteor'){
               e.meteorT=(e.meteorT||0)-dt;
               if(e.meteorT<=0){
-                if(Math.hypot(e._mx-player.x,e._my-player.y)<60)hurtPlayer(e.dmg*1.5,a);
+                if(Math.hypot(e._mx-player.x,e._my-player.y)<60)hurtPlayer(e.dmg*1.3,a);
                 zones.push({x:e._mx,y:e._my,r:55,dmg:e.dmg*0.5,t:5,tickT:0,col:'#ff8020'});
               }
             }else if(e.pattern==='fire_rain'){
@@ -1413,7 +1413,7 @@ function update(dt){
               if(e.fireRainT>0&&Math.random()<dt*40){
                 const rx=player.x+rnd(-600,600),ry=player.y+rnd(-600,600);
                 fx.push({kind:'spark',x:rx,y:ry,t:0,dur:0.3,col:'#ff6020'});
-                if(Math.hypot(rx-player.x,ry-player.y)<30)hurtPlayer(e.dmg*0.5,a);
+                if(Math.hypot(rx-player.x,ry-player.y)<30)hurtPlayer(e.dmg*0.35,a);
               }
             }else if(e.pattern==='final_breath'){
               e.finalBreathT=(e.finalBreathT||0)-dt;
@@ -1562,7 +1562,7 @@ function update(dt){
       const bossScls={knight_shadow:1.8,blood_wolf:1.8,mech_abom:2.0,dragon_ignix:2.2};
       const e=allocEnemy('boss',bossWarn.x,bossWarn.y,{
         hp:Math.round(hpBase),maxHp:Math.round(hpBase),
-        spd:bossSpeeds[bossType],dmg:110,r:bossSizes[bossType],
+        spd:bossSpeeds[bossType],dmg:65,r:bossSizes[bossType],
         col:bossColors[bossType],spdV:3,xp:250,cd:0.4,
         elite:false,chest:false,boss:true,scl:bossScls[bossType],
         bossType:bossType
@@ -2722,12 +2722,15 @@ function drawEnemy(e){
   if(e.boss&&e.st===1){
     const bt=e.bossType||'knight_shadow';
     const p=e.pattern;
+    const warnFont='bold 13px Consolas,monospace';
     // Knight: dark_slash - circle around boss
     if(bt==='knight_shadow'&&p==='dark_slash'){
       ctx.fillStyle='rgba(128,80,192,0.2)';
       ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(160,100,220,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
       ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影斩击',e.x,e.y-210);
     }
     // Knight: shadow_beam - long beam line
     if(bt==='knight_shadow'&&p==='shadow_beam'){
@@ -2738,6 +2741,9 @@ function drawEnemy(e){
       ctx.strokeStyle='rgba(140,60,210,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
       ctx.beginPath();ctx.moveTo(e.x,e.y);
       ctx.arc(e.x,e.y,800,ba-0.26,ba+0.26);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+      const mx=e.x+Math.cos(ba)*400,my=e.y+Math.sin(ba)*400;
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影光束',mx,my);
     }
     // Knight: shadow_rain - large area around player
     if(bt==='knight_shadow'&&p==='shadow_rain'){
@@ -2745,8 +2751,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(player.x,player.y,450,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(140,60,210,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
       ctx.beginPath();ctx.arc(player.x,player.y,450,0,6.283);ctx.stroke();ctx.setLineDash([]);
-      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
-      ctx.fillStyle='rgba(160,80,230,0.7)';ctx.fillText('暗影雨',player.x,player.y-470);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影雨',player.x,player.y-470);
     }
     // Wolf: moon_pounce - pounce path
     if(bt==='blood_wolf'&&p==='moon_pounce'){
@@ -2757,6 +2763,9 @@ function drawEnemy(e){
       ctx.strokeStyle='rgba(255,60,50,0.45)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
       ctx.beginPath();ctx.moveTo(e.x,e.y);
       ctx.arc(e.x,e.y,900,wa-0.3,wa+0.3);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+      const mx=e.x+Math.cos(wa)*450,my=e.y+Math.sin(wa)*450;
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 血月突袭',mx,my);
     }
     // Wolf: slash - circle around wolf
     if(bt==='blood_wolf'&&p==='slash'){
@@ -2764,6 +2773,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(255,50,40,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
       ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 劈砍',e.x,e.y-130);
     }
     // Mech: hammer_slam - cone in front
     if(bt==='mech_abom'&&p==='hammer_slam'){
@@ -2774,6 +2785,9 @@ function drawEnemy(e){
       ctx.strokeStyle='rgba(220,180,120,0.5)';ctx.lineWidth=2;ctx.setLineDash([7,4]);
       ctx.beginPath();ctx.moveTo(e.x,e.y);
       ctx.arc(e.x,e.y,500,ma-0.35,ma+0.35);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+      const mx=e.x+Math.cos(ma)*250,my=e.y+Math.sin(ma)*250;
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 巨锤砸击',mx,my);
     }
     // Mech: saw_blades - fan shape
     if(bt==='mech_abom'&&p==='saw_blades'){
@@ -2784,6 +2798,9 @@ function drawEnemy(e){
       ctx.strokeStyle='rgba(180,220,120,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
       ctx.beginPath();ctx.moveTo(e.x,e.y);
       ctx.arc(e.x,e.y,450,sa-0.5,sa+0.5);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+      const mx=e.x+Math.cos(sa)*225,my=e.y+Math.sin(sa)*225;
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 链锯飞弹',mx,my);
     }
     // Mech: poison_spray - large circle
     if(bt==='mech_abom'&&p==='poison_spray'){
@@ -2791,8 +2808,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(e.x,e.y,300,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(100,220,100,0.5)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
       ctx.beginPath();ctx.arc(e.x,e.y,300,0,6.283);ctx.stroke();ctx.setLineDash([]);
-      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
-      ctx.fillStyle='rgba(100,220,100,0.7)';ctx.fillText('毒液',e.x,e.y-310);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 毒液喷射',e.x,e.y-310);
     }
     // Dragon: fire_breath - cone
     if(bt==='dragon_ignix'&&p==='fire_breath'){
@@ -2803,6 +2820,9 @@ function drawEnemy(e){
       ctx.strokeStyle='rgba(255,120,30,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,6]);
       ctx.beginPath();ctx.moveTo(e.x,e.y);
       ctx.arc(e.x,e.y,600,ba-0.52,ba+0.52);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+      const mx=e.x+Math.cos(ba)*300,my=e.y+Math.sin(ba)*300;
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 火焰吐息',mx,my);
     }
     // Dragon: wing_flap - large circle
     if(bt==='dragon_ignix'&&p==='wing_flap'){
@@ -2810,8 +2830,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(e.x,e.y,800,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(255,160,60,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,5]);
       ctx.beginPath();ctx.arc(e.x,e.y,800,0,6.283);ctx.stroke();ctx.setLineDash([]);
-      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
-      ctx.fillStyle='rgba(255,160,60,0.7)';ctx.fillText('龙翼拍击',e.x,e.y-810);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 龙翼拍击',e.x,e.y-810);
     }
     // Dragon: tracking_fireball - fireball paths
     if(bt==='dragon_ignix'&&p==='tracking_fireball'){
@@ -2822,6 +2842,8 @@ function drawEnemy(e){
         ctx.strokeStyle='rgba(255,140,40,0.4)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);
         ctx.beginPath();ctx.arc(e.x+Math.cos(ta)*80, e.y+Math.sin(ta)*80, 40, 0, 6.283);ctx.stroke();ctx.setLineDash([]);
       }
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 追踪火球',e.x,e.y-90);
     }
     // Dragon: fire_tornado - large circle
     if(bt==='dragon_ignix'&&p==='fire_tornado'){
@@ -2829,8 +2851,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(255,130,40,0.5)';ctx.lineWidth=2;ctx.setLineDash([7,5]);
       ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.stroke();ctx.setLineDash([]);
-      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
-      ctx.fillStyle='rgba(255,130,40,0.7)';ctx.fillText('火焰旋风',e.x,e.y-410);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 火焰旋风',e.x,e.y-410);
     }
     // Dragon: fire_rain - large area
     if(bt==='dragon_ignix'&&p==='fire_rain'){
@@ -2838,8 +2860,8 @@ function drawEnemy(e){
       ctx.beginPath();ctx.arc(player.x,player.y,600,0,6.283);ctx.fill();
       ctx.strokeStyle='rgba(255,100,30,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
       ctx.beginPath();ctx.arc(player.x,player.y,600,0,6.283);ctx.stroke();ctx.setLineDash([]);
-      ctx.font='bold 12px Consolas,monospace';ctx.textAlign='center';
-      ctx.fillStyle='rgba(255,100,30,0.7)';ctx.fillText('全屏火雨',player.x,player.y-610);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 全屏火雨',player.x,player.y-610);
     }
     // Dragon: lava_eruption - multiple small circles
     if(bt==='dragon_ignix'&&p==='lava_eruption'){
@@ -2850,6 +2872,8 @@ function drawEnemy(e){
         ctx.strokeStyle='rgba(255,80,30,0.5)';ctx.lineWidth=1.5;ctx.setLineDash([3,3]);
         ctx.beginPath();ctx.arc(lx,ly,40,0,6.283);ctx.stroke();ctx.setLineDash([]);
       }
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 熔岩喷发',player.x,player.y-530);
     }
   }
   ctx.save();
@@ -3338,6 +3362,11 @@ function drawBossWolf(e,windup,attacking){
   const grad=ctx.createRadialGradient(0,0,14,0,0,72);
   grad.addColorStop(0,patCol);grad.addColorStop(0.5,'rgba(40,8,10,0.15)');grad.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,72,0,Math.PI*2);ctx.fill();
+  // Tail - behind body
+  ctx.strokeStyle='#3a1010';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(16,30,20,42);ctx.stroke();
+  ctx.strokeStyle='#6a1a1a';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(16,30,20,42);ctx.stroke();
   // Body - dark red fur
   ctx.fillStyle='#3a1010';
   ctx.beginPath();ctx.ellipse(0,4,26,22,0,0,Math.PI*2);ctx.fill();
@@ -3381,11 +3410,6 @@ function drawBossWolf(e,windup,attacking){
   ctx.strokeStyle='#4a1a1a';ctx.lineWidth=1.5;
   ctx.strokeRect(-18,18,8,14);ctx.strokeRect(10,18,8,14);
   ctx.fillStyle='#3a1010';ctx.fillRect(-20,30,10,5);ctx.fillRect(10,30,10,5);
-  // Tail
-  ctx.strokeStyle='#3a1010';ctx.lineWidth=4;
-  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(16,30,20,40);ctx.stroke();
-  ctx.strokeStyle='#6a1a1a';ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(0,20);ctx.quadraticCurveTo(16,30,20,40);ctx.stroke();
   // Blood moon aura
   if(e.howlUsed){
     ctx.strokeStyle='rgba(255,32,64,'+(0.4+0.3*Math.sin(T*8))+')';
@@ -3506,6 +3530,13 @@ function drawBossDragon(e,windup,attacking){
   const grad=ctx.createRadialGradient(0,0,20,0,0,100);
   grad.addColorStop(0,phaseCol);grad.addColorStop(0.5,phase>=3?'rgba(40,10,5,0.2)':'rgba(30,15,10,0.15)');grad.addColorStop(1,'rgba(0,0,0,0)');
   ctx.fillStyle=grad;ctx.beginPath();ctx.arc(0,0,100,0,Math.PI*2);ctx.fill();
+  // Tail and spike - behind body
+  ctx.strokeStyle='#3a1a0a';ctx.lineWidth=6;
+  ctx.beginPath();ctx.moveTo(0,35);ctx.quadraticCurveTo(12,55,24,60);ctx.stroke();
+  ctx.strokeStyle='#6a2a0a';ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(0,35);ctx.quadraticCurveTo(12,55,24,60);ctx.stroke();
+  ctx.fillStyle='#5a2010';
+  ctx.beginPath();ctx.moveTo(24,60);ctx.lineTo(28,72);ctx.lineTo(18,68);ctx.fill();
   // Body - massive dragon
   ctx.fillStyle='#3a1a0a';
   ctx.beginPath();ctx.moveTo(-30,-20);ctx.lineTo(-40,10);ctx.lineTo(-30,30);ctx.lineTo(-10,40);ctx.lineTo(10,40);ctx.lineTo(30,30);ctx.lineTo(40,10);ctx.lineTo(30,-20);ctx.fill();
@@ -3560,14 +3591,6 @@ function drawBossDragon(e,windup,attacking){
   ctx.strokeStyle='#4a1808';ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(-20,-10);ctx.lineTo(-50,-30);ctx.stroke();
   ctx.beginPath();ctx.moveTo(20,-10);ctx.lineTo(50,-30);ctx.stroke();
-  // Tail
-  ctx.strokeStyle='#3a1a0a';ctx.lineWidth=6;
-  ctx.beginPath();ctx.moveTo(0,35);ctx.quadraticCurveTo(10,55,30,60);ctx.stroke();
-  ctx.strokeStyle='#6a2a0a';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(0,35);ctx.quadraticCurveTo(10,55,30,60);ctx.stroke();
-  // Tail spike
-  ctx.fillStyle='#5a2010';
-  ctx.beginPath();ctx.moveTo(30,60);ctx.lineTo(34,70);ctx.lineTo(26,68);ctx.fill();
   // Legs
   ctx.fillStyle='#2a1008';ctx.fillRect(-22,30,10,16);ctx.fillRect(12,30,10,16);
   ctx.strokeStyle='#4a1a0a';ctx.lineWidth=2;
