@@ -1027,11 +1027,12 @@ function update(dt){
             e.phase=rnd(0.5,1.0);
             e.cd=0;
             const r=Math.random();
-            if(d>250&&r<0.3)e.pattern='shadow_dash';
-            else if(r<0.45&&e.shadowClones<3)e.pattern='shadow_clone';
-            else if(r<0.65)e.pattern='dark_slash';
-            else if(r<0.85)e.pattern='shadow_beam';
-            else e.pattern='shadow_rain';
+            if(d>250&&r<0.25)e.pattern='shadow_dash';
+            else if(r<0.35&&e.shadowClones<3)e.pattern='shadow_clone';
+            else if(r<0.55)e.pattern='dark_slash';
+            else if(r<0.75)e.pattern='shadow_beam';
+            else if(r<0.9)e.pattern='shadow_rain';
+            else e.pattern='bullet_hell';
           }
           if(e.st===1){
             e.vx*=0.85;e.vy*=0.85;
@@ -1078,6 +1079,13 @@ function update(dt){
                 e.stT=0.4;
                 e.shadowRainT=2.5;
                 SOUND.shot();
+              }else if(e.pattern==='bullet_hell'){
+                e.stT=0.5;
+                for(let i=0;i<12;i++){
+                  const ang2=i*Math.PI/6;
+                  ebolts.push({x:e.x,y:e.y,dx:Math.cos(ang2)*110,dy:Math.sin(ang2)*110,life:5,r:20,dmg:e.dmg*0.8,kind:'bulletHell',col:'#c040e0'});
+                }
+                shake=Math.max(shake,8);SOUND.shot();
               }
             }
           }else if(e.st===2){
@@ -1150,8 +1158,9 @@ function update(dt){
           if(e.phase<=0){
             e.phase=rnd(0.5,1.0);
             e.cd=0;
-            if(d>300&&Math.random()<0.5)e.pattern='moon_pounce';
-            else e.pattern='slash';
+            if(d>300&&Math.random()<0.4)e.pattern='moon_pounce';
+            else if(Math.random()<0.8)e.pattern='slash';
+            else e.pattern='bullet_hell';
           }
           if(e.st===1){
             e.vx*=0.85;e.vy*=0.85;
@@ -1164,6 +1173,13 @@ function update(dt){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:12,r1:80,col:'#ff3040'});
                 shake=Math.max(shake,10);
                 SOUND.hit();
+              }else if(e.pattern==='bullet_hell'){
+                e.stT=0.5;
+                for(let i=0;i<12;i++){
+                  const ang2=i*Math.PI/6;
+                  ebolts.push({x:e.x,y:e.y,dx:Math.cos(ang2)*100,dy:Math.sin(ang2)*100,life:5,r:20,dmg:e.dmg*0.8,kind:'bulletHell',col:'#ff4040'});
+                }
+                shake=Math.max(shake,8);SOUND.shot();
               }else{
                 e.stT=0.35;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.3,r0:10,r1:120,col:'#ff3040'});
@@ -1229,12 +1245,14 @@ function update(dt){
             e.cd=0;
             const r=Math.random();
             if(!e.armsBroken){
-              if(r<0.4)e.pattern='hammer_slam';
-              else if(r<0.75)e.pattern='saw_blades';
-              else e.pattern='poison_spray';
+              if(r<0.35)e.pattern='hammer_slam';
+              else if(r<0.65)e.pattern='saw_blades';
+              else if(r<0.85)e.pattern='poison_spray';
+              else e.pattern='bullet_hell';
             }else{
-              if(r<0.6)e.pattern='poison_spray';
-              else e.pattern='hammer_slam';
+              if(r<0.5)e.pattern='poison_spray';
+              else if(r<0.8)e.pattern='hammer_slam';
+              else e.pattern='bullet_hell';
             }
           }
           if(e.st===1){
@@ -1261,12 +1279,19 @@ function update(dt){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:8,r1:60,col:'#c0c0c0'});
                 shake=Math.max(shake,6);
                 SOUND.shot();
-              }else{
+              }else if(e.pattern==='poison_spray'){
                 e.stT=0.6;
                 zones.push({x:e.x,y:e.y,r:160,dmg:e.dmg*0.4,t:5,tickT:0,col:'#40a040',poison:true});
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.6,r0:10,r1:220,col:'#40a040'});
                 shake=Math.max(shake,8);
                 SOUND.hit();
+              }else if(e.pattern==='bullet_hell'){
+                e.stT=0.5;
+                for(let i=0;i<12;i++){
+                  const ang2=i*Math.PI/6;
+                  ebolts.push({x:e.x,y:e.y,dx:Math.cos(ang2)*105,dy:Math.sin(ang2)*105,life:5,r:20,dmg:e.dmg*0.8,kind:'bulletHell',col:'#80c040'});
+                }
+                shake=Math.max(shake,8);SOUND.shot();
               }
             }
           }else if(e.st===2){
@@ -1321,19 +1346,22 @@ function update(dt){
             e.cd=0;
             const r=Math.random();
             if(e.dragonPhase===1){
-              if(d<350&&r<0.5)e.pattern='fire_breath';
-              else if(r<0.8)e.pattern='meteor';
-              else e.pattern='wing_flap';
+              if(d<350&&r<0.4)e.pattern='fire_breath';
+              else if(r<0.65)e.pattern='meteor';
+              else if(r<0.85)e.pattern='wing_flap';
+              else e.pattern='bullet_hell';
             }else if(e.dragonPhase===2){
-              if(r<0.4)e.pattern='tracking_fireball';
-              else if(r<0.7)e.pattern='fire_tornado';
-              else if(r<0.85)e.pattern='fire_breath';
-              else e.pattern='meteor';
+              if(r<0.35)e.pattern='tracking_fireball';
+              else if(r<0.6)e.pattern='fire_tornado';
+              else if(r<0.75)e.pattern='fire_breath';
+              else if(r<0.9)e.pattern='meteor';
+              else e.pattern='bullet_hell';
             }else{
-              if(r<0.35)e.pattern='fire_rain';
-              else if(r<0.6)e.pattern='lava_eruption';
-              else if(r<0.8)e.pattern='final_breath';
-              else e.pattern='tracking_fireball';
+              if(r<0.3)e.pattern='fire_rain';
+              else if(r<0.5)e.pattern='lava_eruption';
+              else if(r<0.7)e.pattern='final_breath';
+              else if(r<0.85)e.pattern='tracking_fireball';
+              else e.pattern='bullet_hell';
             }
           }
           if(e.st===1){
@@ -1383,6 +1411,13 @@ function update(dt){
                 }
                 shake=Math.max(shake,8);
                 SOUND.die();
+              }else if(e.pattern==='bullet_hell'){
+                e.stT=0.5;
+                for(let i=0;i<12;i++){
+                  const ang2=i*Math.PI/6;
+                  ebolts.push({x:e.x,y:e.y,dx:Math.cos(ang2)*100,dy:Math.sin(ang2)*100,life:5,r:20,dmg:e.dmg*0.8,kind:'bulletHell',col:'#ff8020'});
+                }
+                shake=Math.max(shake,8);SOUND.shot();
               }else{
                 e.stT=3;e.finalBreathT=3;
                 const vw2=W/ZOOM,vh2=H/ZOOM;
@@ -2179,6 +2214,23 @@ function drawBone(b){
     ctx.restore();
     return;
   }
+  if(b.kind==='bulletHell'){
+    const pulse=1+Math.sin(T*8+b.x*0.1)*0.2;
+    const er=b.r||20;
+    ctx.save();
+    ctx.translate(b.x,b.y);
+    ctx.shadowColor=b.col||'#ff3060';
+    ctx.shadowBlur=22;
+    ctx.fillStyle=b.col||'#ff4060';
+    ctx.beginPath();ctx.arc(0,0,er*pulse,0,6.283);ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle='rgba(255,255,255,0.35)';
+    ctx.beginPath();ctx.arc(0,0,er*0.4,0,6.283);ctx.fill();
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(0,0,er*0.18,0,6.283);ctx.fill();
+    ctx.restore();
+    return;
+  }
   ctx.save();
   ctx.translate(b.x,b.y);
   ctx.rotate(Math.atan2(b.dy,b.dx));
@@ -2761,6 +2813,15 @@ function drawEnemy(e){
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影雨',player.x,player.y-320);
     }
+    // Knight: bullet_hell - ring warning
+    if(bt==='knight_shadow'&&p==='bullet_hell'){
+      ctx.fillStyle='rgba(160,60,220,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(180,80,240,0.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影弹幕',e.x,e.y-190);
+    }
     // Wolf: moon_pounce - pounce path
 	    if(bt==='blood_wolf'&&p==='moon_pounce'){
 	      const wa=angTo(e,player);
@@ -2782,6 +2843,15 @@ function drawEnemy(e){
 	      ctx.beginPath();ctx.arc(e.x,e.y,100,0,6.283);ctx.stroke();ctx.setLineDash([]);
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 劈砍',e.x,e.y-110);
+    }
+    // Wolf: bullet_hell
+    if(bt==='blood_wolf'&&p==='bullet_hell'){
+      ctx.fillStyle='rgba(255,50,40,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,70,60,0.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 血月弹幕',e.x,e.y-190);
     }
     // Mech: hammer_slam - cone in front
 	    if(bt==='mech_abom'&&p==='hammer_slam'){
@@ -2817,6 +2887,15 @@ function drawEnemy(e){
 	      ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.stroke();ctx.setLineDash([]);
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 毒液喷射',e.x,e.y-210);
+    }
+    // Mech: bullet_hell
+    if(bt==='mech_abom'&&p==='bullet_hell'){
+      ctx.fillStyle='rgba(120,200,80,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(140,220,100,0.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 剧毒弹幕',e.x,e.y-190);
     }
     // Dragon: fire_breath - cone
 	    if(bt==='dragon_ignix'&&p==='fire_breath'){
@@ -2881,6 +2960,15 @@ function drawEnemy(e){
       }
       ctx.font=warnFont;ctx.textAlign='center';
       ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 熔岩喷发',player.x,player.y-530);
+    }
+    // Dragon: bullet_hell
+    if(bt==='dragon_ignix'&&p==='bullet_hell'){
+      ctx.fillStyle='rgba(255,100,30,0.18)';
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,140,50,0.5)';ctx.lineWidth=2;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.arc(e.x,e.y,180,0,6.283);ctx.stroke();ctx.setLineDash([]);
+      ctx.font=warnFont;ctx.textAlign='center';
+      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 龙炎弹幕',e.x,e.y-190);
     }
   }
   ctx.save();
