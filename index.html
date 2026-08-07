@@ -685,11 +685,12 @@ function allocEnemy(kind,x,y,o){
   e.vx=0;e.vy=0;e.kx=0;e.ky=0;e.hitFlash=0;e.slow=0;
   e.dmgMul=1;e.dmgMulT=0;e.freeze=0;e.poisonDps=0;e.poisonT=0;
   e.spec=null;e.specT=rnd(3,5);e.teleT=0;e.teleFx=false;e.ramT=0;e.ramVX=0;e.ramVY=0;
-  e.lungeT=0;e.lungeVX=0;e.lungeVY=0;e.lunged=false;
-  e.dead=false;e.elite=!!o.elite;e.chest=!!o.chest;e.boss=!!o.boss;
-  e.bossType=o.bossType||null;
-  e.st=0;e.stT=0;e.cd=o.cd||0;e.atkDmg=false;
-  enemies.push(e);
+	e.lungeT=0;e.lungeVX=0;e.lungeVY=0;e.lunged=false;
+	e.dead=false;e.elite=!!o.elite;e.chest=!!o.chest;e.boss=!!o.boss;
+	e.bossType=o.bossType||null;
+	e.clone=false;e.cloneT=0;e.cloneTarget=null;e.cloneVX=0;e.cloneVY=0;
+	e.st=0;e.stT=0;e.cd=o.cd||0;e.atkDmg=false;
+	enemies.push(e);
   return e;
 }
 function recycleEnemy(e){enemyPool.push(e);if(enemyPool.length>300)enemyPool.pop();}
@@ -1506,6 +1507,7 @@ function update(dt){
           hurtPlayer(e.dmg,ca);
           e.dead=true;e.hp=0;
           fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.3,r0:4,r1:30,col:'#7030c0'});
+          continue;
         }
         alive.push(e);continue;
       }      const a=angTo(e,player);
@@ -1651,6 +1653,10 @@ function update(dt){
       const bossType=currentBossType;
       bossActive=false;
       bossKilled++;
+      // Kill all remaining clones
+      for(const en of enemies){
+        if(en.clone&&!en.dead){en.dead=true;en.hp=0;}
+      }
       const dropId=BOSS_DROPS[bossType];
       giveEquip(dropId);
       const dropName=EQUIPS[dropId].name;
@@ -2024,7 +2030,7 @@ function xpOverflow(){
 function levelUpInstant(){
   player.level++;
   player.maxHp+=10;
-  player.hp=player.maxHp;
+  player.hp=Math.min(player.maxHp,player.hp+player.maxHp*0.3);
   player.xpNeed=Math.round(28+player.level*8+player.level*player.level*1.6);
 }
 
