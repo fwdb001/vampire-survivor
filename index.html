@@ -630,7 +630,8 @@ function applyDmg(e,d,knock,kx,ky){
   }
   e.hp-=d;
   const cl=charmLeech();
-  if(cl>0&&player&&player.hp>0&&player.hp<player.maxHp)player.hp=Math.min(player.maxHp,player.hp+d*cl);
+  let effLeech=bossActive?Math.min(cl,0.01):cl;
+  if(effLeech>0&&player&&player.hp>0&&player.hp<player.maxHp)player.hp=Math.min(player.maxHp,player.hp+d*effLeech);
   e.hitFlash=0.14;
   e.kx=(e.kx||0)+kx*knock;
   e.ky=(e.ky||0)+ky*knock;
@@ -1196,7 +1197,7 @@ function update(dt){
               }else{
                 e.stT=0.35;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.3,r0:10,r1:120,col:'#ff3040'});
-                if(d<100)hurtPlayer(e.dmg*1.1,a);
+                if(d<120)hurtPlayer(e.dmg*1.1,a);
                 shake=Math.max(shake,8);
                 SOUND.hit();
               }
@@ -1299,7 +1300,7 @@ function update(dt){
                 SOUND.shot();
               }else if(e.pattern==='poison_spray'){
                 e.stT=0.6;
-                zones.push({x:e.x,y:e.y,r:160,dmg:e.dmg*0.4,t:5,tickT:0,col:'#40a040',poison:true});
+                zones.push({x:e.x,y:e.y,r:220,dmg:e.dmg*0.4,t:5,tickT:0,col:'#40a040',poison:true});
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.6,r0:10,r1:220,col:'#40a040'});
                 shake=Math.max(shake,8);
                 SOUND.hit();
@@ -2000,7 +2001,7 @@ function update(dt){
             if((dx<rr||-dx<rr)&&(dy<rr||-dy<rr)&&dx*dx+dy*dy<rr*rr){
               let da=angTo({x:s.x,y:s.y},e)-s.ang;
               while(da>Math.PI)da-=6.283;while(da<-Math.PI)da+=6.283;
-              if(Math.abs(da)<(s.cone/2)*D2R){applyDmg(e,s.d,14,Math.cos(s.ang),Math.sin(s.ang));player.hp=Math.min(player.maxHp,player.hp+s.d*(s.leech||0));}
+              if(Math.abs(da)<(s.cone/2)*D2R){applyDmg(e,s.d,14,Math.cos(s.ang),Math.sin(s.ang));let wl=s.leech||0;if(bossActive)wl=Math.min(wl,0.01);player.hp=Math.min(player.maxHp,player.hp+s.d*wl);}
             }
           }
           SOUND.hit();
