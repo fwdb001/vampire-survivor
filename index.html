@@ -760,7 +760,6 @@ function offerCards(){
     const own=ownedLv(id);
     const defW=WEPS[id];
     if(own<defW.max){
-      if(id==='bird'&&Math.random()>0.5)continue;
       const nl=own+1;
       pool.push({
         name:defW.name,
