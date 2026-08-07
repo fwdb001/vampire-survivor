@@ -1079,7 +1079,7 @@ function update(dt){
               }else if(e.pattern==='shadow_beam'){
                 e.stT=1.0;
                 e.beamAng=angTo(e,player);
-                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:1.0,r0:10,r1:450,col:'#7030c0'});
+                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:10,r1:80,col:'#7030c0'});
                 shake=Math.max(shake,14);
                 SOUND.die();
               }else if(e.pattern==='shadow_rain'){
@@ -2816,9 +2816,9 @@ function drawEnemy(e){
     // Knight: dark_slash - circle around boss
 		    if(bt==='knight_shadow'&&p==='dark_slash'){
 		      ctx.fillStyle='rgba(128,80,192,0.2)';
-		      ctx.beginPath();ctx.arc(e.x,e.y,90,0,6.283);ctx.fill();
-		      ctx.strokeStyle='rgba(160,100,220,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
-		      ctx.beginPath();ctx.arc(e.x,e.y,90,0,6.283);ctx.stroke();ctx.setLineDash([]);
+			      ctx.beginPath();ctx.arc(e.x,e.y,110,0,6.283);ctx.fill();
+			      ctx.strokeStyle='rgba(160,100,220,0.5)';ctx.lineWidth=2;ctx.setLineDash([6,4]);
+			      ctx.beginPath();ctx.arc(e.x,e.y,110,0,6.283);ctx.stroke();ctx.setLineDash([]);
 		      ctx.font=warnFont;ctx.textAlign='center';
 		      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影斩击',e.x,e.y-100);
 	    }
@@ -2827,10 +2827,10 @@ function drawEnemy(e){
 		      const ba=e.beamAng||angTo(e,player);
 		      ctx.fillStyle='rgba(112,48,192,0.15)';
 		      ctx.beginPath();ctx.moveTo(e.x,e.y);
-		      ctx.arc(e.x,e.y,450,ba-0.26,ba+0.26);ctx.closePath();ctx.fill();
-		      ctx.strokeStyle='rgba(140,60,210,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
-		      ctx.beginPath();ctx.moveTo(e.x,e.y);
-		      ctx.arc(e.x,e.y,450,ba-0.26,ba+0.26);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+		      ctx.arc(e.x,e.y,450,ba-0.3,ba+0.3);ctx.closePath();ctx.fill();
+			      ctx.strokeStyle='rgba(140,60,210,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
+			      ctx.beginPath();ctx.moveTo(e.x,e.y);
+			      ctx.arc(e.x,e.y,450,ba-0.3,ba+0.3);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
 		      const mx=e.x+Math.cos(ba)*130,my=e.y+Math.sin(ba)*130;
       ctx.font=warnFont;ctx.textAlign='center';
       ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影光束',mx,my);
