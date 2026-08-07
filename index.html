@@ -352,7 +352,7 @@ const WEPS={
       SOUND.shot();
     }},
   whip:{name:'圣鞭',icon:'↟',max:6,
-    cfg(l){return{dmg:0+42*l,cd:1.2*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.008,0.0015*l)};},
+    cfg(l){return{dmg:0+42*l,cd:1.2*Math.pow(0.9,l-1),rad:170+16*l,cone:175,leech:Math.min(0.015,0.005*l)};},
     fire(l,p,mult){
       const c=this.cfg(l);
       const tgt=pickNearest(340);
@@ -1615,7 +1615,7 @@ function update(dt){
     if(bossWarn){bossWarn.t-=dt;if(bossWarn.t<=0){
       const lv=player.level;
       const bossType=currentBossType;
-      const hpBase=15000+lv*lv*600+lv*lv*lv*50;
+      const hpBase=10000+lv*lv*350+lv*lv*lv*25;
       const bossColors={knight_shadow:'#2a0a30',blood_wolf:'#3a0a10',mech_abom:'#1a2a1a',dragon_ignix:'#3a1a0a'};
       const bossSpeeds={knight_shadow:100,blood_wolf:125,mech_abom:65,dragon_ignix:0};
       const bossSizes={knight_shadow:56,blood_wolf:52,mech_abom:64,dragon_ignix:80};
@@ -1632,8 +1632,8 @@ function update(dt){
       if(bossType==='blood_wolf'){
         e.wolves=[];e.howlUsed=false;e.wolfCd=0;
       }else if(bossType==='mech_abom'){
-        e.leftArmHp=8000;e.leftArmMax=8000;e.rightArmHp=8000;e.rightArmMax=8000;
-        e.coreHp=12000;e.coreMax=12000;e.armsBroken=false;e.repairing=false;e.repairCd=0;
+        e.leftArmHp=5000;e.leftArmMax=5000;e.rightArmHp=5000;e.rightArmMax=5000;
+        e.coreHp=7500;e.coreMax=7500;e.armsBroken=false;e.repairing=false;e.repairCd=0;
       }else if(bossType==='dragon_ignix'){
         e.dragonPhase=1;e.dragonPos='top';e.dragonFlyCd=3;e.dragonWeakSpot=true;
         e.headX=e.x;e.headY=e.y-50;e.bodyX=e.x;e.bodyY=e.y+20;
