@@ -464,7 +464,7 @@ const WEPS={
       }
       SOUND.shot();
     }},
-  bird:{name:'飞舞的鹁',icon:'鹁',max:6,
+  bird:{name:'飞舞的鹁',icon:'鹁',max:2,
     cfg(l){return{dmg:40+570*l,cd:1.2*Math.pow(0.85,l-1),n:1+(l>=4?1:0)+(l>=6?1:0),rng:320,spdStrike:420,rad:50+8*l};},
     fire(l,p,mult){}}
 };
