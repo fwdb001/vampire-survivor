@@ -230,6 +230,7 @@ let nextElite=20;
 let currentMove=0;
 let xpGot=0;
 let bossWarn=null,bossActive=false,bossKilled=0,currentBossType='knight_shadow',nextBossLevel=6,bossOrderIdx=0;
+let birdGuaranteed=true;
 let wave=1,waveKills=0,waveKillTarget=15,waveBossTriggered=false;
 let victory=false;
 const BOSS_TYPES=['knight_shadow','blood_wolf','mech_abom','dragon_ignix'];
@@ -484,7 +485,7 @@ const EQUIPS={
   coat:{name:'羽绒服',icon:'🛡️',max:5,
     cfg(l){return{reduct:0.04+0.03*(l-1)};}},
   charm:{name:'蝙蝠护符',icon:'🦇',max:5,
-    cfg(l){return{leech:0.004*l};}},
+    cfg(l){return{leech:0.005*l};}},
   mirror:{name:'弹射镜',icon:'🪞',max:5,
     cfg(l){return{bounce:Math.min(2,l-1)};}},
   watch:{name:'怀表',icon:'⌛',max:5,
@@ -565,7 +566,7 @@ function startRun(){
     tReady:0,growT:0
   };
   enemies=[];gems=[];bolts=[];ebolts=[];fx=[];parts=[];texts=[];tomes=[];bottles=[];zones=[];birds=[];
-  kills=0;T=0;eliteWarn=null;chest=null;cardOffer=[];red=0;flash=0;nextElite=20;xpGot=0;bossWarn=null;nextBossLevel=6;bossActive=false;bossKilled=0;currentBossType='knight_shadow';enemyPool=[];boltPool=[];victory=false;bossOrderIdx=0;
+  kills=0;T=0;eliteWarn=null;chest=null;cardOffer=[];red=0;flash=0;nextElite=20;xpGot=0;bossWarn=null;nextBossLevel=6;bossActive=false;bossKilled=0;currentBossType='knight_shadow';enemyPool=[];boltPool=[];victory=false;bossOrderIdx=0;birdGuaranteed=true;
   wave=1;waveKills=0;waveKillTarget=15;waveBossTriggered=false;
   ghostWolves=[];furnaceCoreTimer=0;
   PTR.joy=null;
@@ -759,7 +760,9 @@ function offerCards(){
     const own=ownedLv(id);
     const defW=WEPS[id];
     if(own<defW.max){
-      if(id==='bird'&&Math.random()>0.5)continue;
+      if(id==='bird'){
+      if(birdGuaranteed&&player.level<=4){/* force include */}else if(Math.random()>0.5)continue;
+    }
       const nl=own+1;
       pool.push({
         name:defW.name,
@@ -788,6 +791,16 @@ function offerCards(){
   if(newCards.length)picks.add(newCards[rndi(0,newCards.length-1)]);
   while(picks.size<Math.min(3,pool.length)&&picks.size<20){
     picks.add(pool[rndi(0,pool.length-1)]);
+  }
+  // Bird guarantee: force bird into picks before level 5
+  if(birdGuaranteed&&player.level<=4){
+    const birdCard=pool.find(c=>c.icon==='鹁');
+    if(birdCard&&!picks.has(birdCard)){
+      const arr=[...picks];
+      arr[arr.length-1]=birdCard;
+      picks.clear();for(const c of arr)picks.add(c);
+    }
+    birdGuaranteed=false;
   }
   cardOffer=[...picks];
   cardShownAt=performance.now();
