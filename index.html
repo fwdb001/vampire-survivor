@@ -1182,7 +1182,7 @@ function update(dt){
               e.st=2;e.stT=0.5;
               if(e.pattern==='moon_pounce'){
                 e.stT=0.8;
-                const v=500+Math.random()*200;
+                const v=700+Math.random()*300;
                 e.vx=Math.cos(a)*v;e.vy=Math.sin(a)*v;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:12,r1:120,col:'#ff3040'});
                 shake=Math.max(shake,10);
@@ -1203,7 +1203,7 @@ function update(dt){
               }
             }
           }else if(e.st===2){
-            e.vx*=0.92;e.vy*=0.92;
+            e.vx*=0.97;e.vy*=0.97;
             if(e.pattern==='moon_pounce'){
               if(d<120){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.5,r0:10,r1:120,col:'#ff5060'});
@@ -1214,11 +1214,11 @@ function update(dt){
             }
             if(e.stT<=0){e.st=0;e.cd=rnd(0.2,0.5);}
           }else{
-            if(e.cd<=0&&d<350){
-              e.st=1;e.stT=0.28;
+            if(e.cd<=0&&d<600){
+              e.st=1;e.stT=0.3;
             }
-            const spd=e.spd*(0.85+0.25*Math.sin(T*4+e.r));
-            const lr=Math.min(1,dt*10);
+            const spd=e.spd*(0.8+0.3*Math.sin(T*3.5+e.r));
+            const lr=Math.min(1,dt*9);
             e.vx+=(Math.cos(a)*spd-e.vx)*lr;
             e.vy+=(Math.sin(a)*spd-e.vy)*lr;
             const vr=Math.sqrt(e.vx*e.vx+e.vy*e.vy);
@@ -1317,18 +1317,18 @@ function update(dt){
             e.vx*=0.9;e.vy*=0.9;
             if(e.stT<=0){e.st=0;e.cd=rnd(0.3,0.6);}
           }else{
-            if(e.cd<=0&&d<300){
-              e.st=1;e.stT=0.35;
+            if(e.cd<=0&&d<600){
+              e.st=1;e.stT=0.3;
             }
-            const spd=e.spd*(0.7+0.3*Math.sin(T*2.5+e.r));
-            const lr=Math.min(1,dt*6);
+            const spd=e.spd*(0.8+0.3*Math.sin(T*3.5+e.r));
+            const lr=Math.min(1,dt*9);
             e.vx+=(Math.cos(a)*spd-e.vx)*lr;
             e.vy+=(Math.sin(a)*spd-e.vy)*lr;
             const vr=Math.sqrt(e.vx*e.vx+e.vy*e.vy);
             const cap=e.spd+e.spdV;
             if(vr>cap){e.vx=e.vx/vr*cap;e.vy=e.vy/vr*cap;}
             if(d<e.r+p.r+2){
-              e.x-=Math.cos(a)*dt*20;e.y-=Math.sin(a)*dt*20;
+              e.x-=Math.cos(a)*dt*30;e.y-=Math.sin(a)*dt*30;
             }
           }
         }else if(bt==='dragon_ignix'){
@@ -1488,7 +1488,7 @@ function update(dt){
             if(e.stT<=0){e.st=0;e.cd=rnd(0.3,0.8);}
           }else{
             if(e.cd<=0&&d<600){
-              e.st=1;e.stT=0.4;
+              e.st=1;e.stT=0.3;
             }
             e.vx*=0.9;e.vy*=0.9;
           }
