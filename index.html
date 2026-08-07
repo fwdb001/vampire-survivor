@@ -1854,7 +1854,7 @@ function update(dt){
           if((dx<rr||-dx<rr)&&(dy<rr||-dy<rr)&&dx*dx+dy*dy<rr*rr&&!b.hit.has(e)){
             b.hit.add(e);
             let dd=b.d;
-            if(b.kind==='axe'&&e.hp>0&&e.hp<=e.maxHp*0.3)dd=e.hp;
+            if(b.kind==='axe'&&e.hp>0&&e.hp<=e.maxHp*0.1)dd=e.hp;
             applyDmg(e,dd,10,b.dx/18,b.dy/18);
             fx.push({kind:'spark',x:b.x,y:b.y,t:0,dur:0.15,col:'#fff'});
             if(b.kind==='wine'){
