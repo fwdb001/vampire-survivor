@@ -257,7 +257,7 @@ async function loadBoard(){
     const data=await res.json();
     if(!data)return _boardCache;
     const arr=Object.values(data);
-    _boardCache=arr.filter(r=>r&&typeof r.s==='number'&&r.s>0).sort((a,b)=>b.s-a.s).slice(0,200);
+    _boardCache=arr.filter(r=>r&&typeof r.s==='number'&&r.s>0&&r.v===true).sort((a,b)=>a.s-b.s).slice(0,200);
     _boardLastFetch=now;
     return _boardCache;
   }catch(_){return _boardCache;}
@@ -274,14 +274,14 @@ function myBoardRank(s){
 async function gameOverSaveScore(){
   try{
     const now=Math.floor(T);
-    if(now<=0)return;
+    if(now<=0||!victory)return;
     const myName=getPlayerName();
     const res=await fetch(LB_URL);
     const data=await res.json();
     const current=data||{};
     const entryKey=playerUID+'_'+now+'_'+Math.random().toString(36).slice(2,6);
-    current[entryKey]={n:myName,s:now,lv:player.level,k:kills,uid:playerUID,ts:Date.now()};
-    const arr=Object.values(current).sort((a,b)=>b.s-a.s);
+    current[entryKey]={n:myName,s:now,lv:player.level,k:kills,uid:playerUID,ts:Date.now(),v:true};
+    const arr=Object.values(current).filter(r=>r&&r.v===true).sort((a,b)=>a.s-b.s);
     const trimmed={};
     arr.slice(0,200).forEach((r,i)=>{trimmed['e'+i]=r;});
     await fetch(LB_URL,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(trimmed)});
@@ -1054,7 +1054,7 @@ function update(dt){
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.35,r0:10,r1:80,col:'#7030c0'});
                 e.x=e.blinkX;e.y=e.blinkY;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:30,r1:90,col:'#9040e0'});
-                zones.push({x:e.x,y:e.y,r:70,dmg:e.dmg*1.6,t:0.3,tickT:0,col:'#ff3030'});
+                zones.push({x:e.x,y:e.y,r:90,dmg:e.dmg*1.6,t:0.3,tickT:0,col:'#ff3030'});
                 shake=Math.max(shake,12);
                 const da2=dist(player,e);
                 if(da2<100)hurtPlayer(e.dmg*1.2,angTo(e,player));
@@ -1074,7 +1074,7 @@ function update(dt){
                 e.stT=0.35;
                 fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:10,r1:110,col:'#8050c0'});
                 shake=Math.max(shake,10);
-                if(d<90)hurtPlayer(e.dmg*1.1,a);
+                if(d<110)hurtPlayer(e.dmg*1.1,a);
                 SOUND.hit();
               }else if(e.pattern==='shadow_beam'){
                 e.stT=1.0;
@@ -1098,7 +1098,7 @@ function update(dt){
           }else if(e.st===2){
             e.vx*=0.9;e.vy*=0.9;
             if(e.pattern==='shadow_beam'){
-              if(e.beamAng!==undefined&&d<400){
+              if(e.beamAng!==undefined&&d<450){
                 const da2=angTo(e,player);
                 let diff=da2-e.beamAng;
                 while(diff>Math.PI)diff-=Math.PI*2;
@@ -1184,7 +1184,7 @@ function update(dt){
                 e.stT=0.8;
                 const v=500+Math.random()*200;
                 e.vx=Math.cos(a)*v;e.vy=Math.sin(a)*v;
-                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:12,r1:80,col:'#ff3040'});
+                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.4,r0:12,r1:120,col:'#ff3040'});
                 shake=Math.max(shake,10);
                 SOUND.hit();
               }else if(e.pattern==='bullet_hell'){
@@ -1393,7 +1393,7 @@ function update(dt){
               const phMult2=e.dragonPhase===3?1.3:1;
               if(e.pattern==='fire_breath'){
                 e.stT=1.5;e.breathAng=angTo(e,player);
-                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:1.5,r0:14,r1:600,col:'#ff8020'});
+                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:1.5,r0:14,r1:350,col:'#ff8020'});
                 shake=Math.max(shake,10);
                 SOUND.die();
               }else if(e.pattern==='meteor'){
@@ -1403,7 +1403,7 @@ function update(dt){
                 SOUND.shot();
               }else if(e.pattern==='wing_flap'){
                 e.stT=0.8;
-                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.8,r0:30,r1:800,col:'#ffa040'});
+                fx.push({kind:'ring',x:e.x,y:e.y,t:0,dur:0.8,r0:30,r1:350,col:'#ffa040'});
                 shake=Math.max(shake,16);
                 if(d<350)hurtPlayer(e.dmg*0.5*phMult2,a);
                 SOUND.die();
@@ -1465,8 +1465,8 @@ function update(dt){
             }else if(e.pattern==='meteor'){
               e.meteorT=(e.meteorT||0)-dt;
               if(e.meteorT<=0){
-                if(Math.hypot(e._mx-player.x,e._my-player.y)<45)hurtPlayer(e.dmg*0.9*phMult,a);
-                zones.push({x:e._mx,y:e._my,r:40,dmg:e.dmg*0.4*phMult,t:5,tickT:0,col:'#ff8020'});
+                if(Math.hypot(e._mx-player.x,e._my-player.y)<50)hurtPlayer(e.dmg*0.9*phMult,a);
+                zones.push({x:e._mx,y:e._my,r:50,dmg:e.dmg*0.4*phMult,t:5,tickT:0,col:'#ff8020'});
               }
             }else if(e.pattern==='fire_rain'){
               e.fireRainT=(e.fireRainT||0)-dt;
@@ -2827,10 +2827,10 @@ function drawEnemy(e){
 		      const ba=e.beamAng||angTo(e,player);
 		      ctx.fillStyle='rgba(112,48,192,0.15)';
 		      ctx.beginPath();ctx.moveTo(e.x,e.y);
-		      ctx.arc(e.x,e.y,250,ba-0.26,ba+0.26);ctx.closePath();ctx.fill();
+		      ctx.arc(e.x,e.y,450,ba-0.26,ba+0.26);ctx.closePath();ctx.fill();
 		      ctx.strokeStyle='rgba(140,60,210,0.5)';ctx.lineWidth=2;ctx.setLineDash([8,5]);
 		      ctx.beginPath();ctx.moveTo(e.x,e.y);
-		      ctx.arc(e.x,e.y,250,ba-0.26,ba+0.26);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
+		      ctx.arc(e.x,e.y,450,ba-0.26,ba+0.26);ctx.closePath();ctx.stroke();ctx.setLineDash([]);
 		      const mx=e.x+Math.cos(ba)*130,my=e.y+Math.sin(ba)*130;
       ctx.font=warnFont;ctx.textAlign='center';
       ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 暗影光束',mx,my);
@@ -2869,9 +2869,9 @@ function drawEnemy(e){
     // Wolf: slash - circle around wolf
 	    if(bt==='blood_wolf'&&p==='slash'){
 	      ctx.fillStyle='rgba(255,40,30,0.18)';
-	      ctx.beginPath();ctx.arc(e.x,e.y,100,0,6.283);ctx.fill();
+	      ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.fill();
 	      ctx.strokeStyle='rgba(255,50,40,0.45)';ctx.lineWidth=2;ctx.setLineDash([5,3]);
-	      ctx.beginPath();ctx.arc(e.x,e.y,100,0,6.283);ctx.stroke();ctx.setLineDash([]);
+	      ctx.beginPath();ctx.arc(e.x,e.y,120,0,6.283);ctx.stroke();ctx.setLineDash([]);
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 劈砍',e.x,e.y-110);
     }
@@ -2913,9 +2913,9 @@ function drawEnemy(e){
     // Mech: poison_spray - large circle
 	    if(bt==='mech_abom'&&p==='poison_spray'){
 	      ctx.fillStyle='rgba(80,200,80,0.18)';
-	      ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.fill();
+	      ctx.beginPath();ctx.arc(e.x,e.y,220,0,6.283);ctx.fill();
 	      ctx.strokeStyle='rgba(100,220,100,0.5)';ctx.lineWidth=2;ctx.setLineDash([5,4]);
-	      ctx.beginPath();ctx.arc(e.x,e.y,200,0,6.283);ctx.stroke();ctx.setLineDash([]);
+	      ctx.beginPath();ctx.arc(e.x,e.y,220,0,6.283);ctx.stroke();ctx.setLineDash([]);
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 毒液喷射',e.x,e.y-210);
     }
@@ -2965,9 +2965,9 @@ function drawEnemy(e){
     // Dragon: fire_tornado - large circle
 	    if(bt==='dragon_ignix'&&p==='fire_tornado'){
 	      ctx.fillStyle='rgba(255,100,30,0.15)';
-	      ctx.beginPath();ctx.arc(e.x,e.y,250,0,6.283);ctx.fill();
+	      ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.fill();
 	      ctx.strokeStyle='rgba(255,130,40,0.5)';ctx.lineWidth=2;ctx.setLineDash([7,5]);
-	      ctx.beginPath();ctx.arc(e.x,e.y,250,0,6.283);ctx.stroke();ctx.setLineDash([]);
+	      ctx.beginPath();ctx.arc(e.x,e.y,400,0,6.283);ctx.stroke();ctx.setLineDash([]);
 	      ctx.font=warnFont;ctx.textAlign='center';
 	      ctx.fillStyle='rgba(255,60,40,0.8)';ctx.fillText('⚠ 火焰旋风',e.x,e.y-260);
     }
@@ -4307,7 +4307,7 @@ function drawBoard(){
     return;
   }
   const rows=(boardRows||[]).slice();
-  rows.sort((a,b)=>b.s-a.s);
+  rows.sort((a,b)=>a.s-b.s);
   const top=rows.slice(0,10);
   const myS=Math.floor(T);
   const myRank=rows.findIndex(r=>r.uid===playerUID&&r.s===myS);
